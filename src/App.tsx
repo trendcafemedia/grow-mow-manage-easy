@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,8 +32,8 @@ const AppWithAuth = () => (
 // Routes component
 const AppRoutes = () => {
   const { user, loading } = useAuth();
+  const isDevelopment = import.meta.env.DEV;
   
-  // Show nothing while auth is loading
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -51,13 +50,13 @@ const AppRoutes = () => {
         {/* Public routes */}
         <Route 
           path="/auth" 
-          element={!user ? <Auth /> : <Navigate to="/" replace />} 
+          element={!user && !isDevelopment ? <Auth /> : <Navigate to="/" replace />} 
         />
         <Route path="/auth/callback" element={<AuthCallback />} />
         
-        {/* Protected routes */}
+        {/* Protected routes - bypass auth check in development */}
         <Route 
-          element={user ? <MainLayout /> : <Navigate to="/auth" replace />}
+          element={user || isDevelopment ? <MainLayout /> : <Navigate to="/auth" replace />}
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/customers" element={<Customers />} />
