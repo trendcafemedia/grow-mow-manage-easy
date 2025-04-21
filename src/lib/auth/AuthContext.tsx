@@ -34,9 +34,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Handle navigation separately without blocking
       if (event === 'SIGNED_IN' && !window.location.pathname.includes('/auth/callback')) {
+        console.log('Signed in event detected, navigating to home');
         setTimeout(() => navigate('/'), 0);
       }
       if (event === 'SIGNED_OUT') {
+        console.log('Signed out event detected, navigating to auth');
         setTimeout(() => navigate('/auth'), 0);
       }
     });
@@ -71,9 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    // Get the current URL to determine if we're in production or development
-    const origin = window.location.origin;
-    const redirectUrl = `${origin}/auth/callback`;
+    // Get window location for absolute URLs
+    const currentUrl = window.location;
+    const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`;
+    const redirectUrl = `${baseUrl}/auth/callback`;
     
     console.log('Signing in with Google, redirect to:', redirectUrl);
     

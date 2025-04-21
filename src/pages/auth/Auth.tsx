@@ -31,6 +31,7 @@ const Auth = () => {
         });
       } else {
         await signIn(email, password);
+        // Note: Navigation is handled by auth context via onAuthStateChange
       }
     } catch (error: any) {
       console.error('Auth error:', error);
@@ -49,8 +50,10 @@ const Auth = () => {
     try {
       setIsLoading(true);
       setErrorMessage(null);
+      
+      console.log('Initiating Google sign in from Auth page');
       await signInWithGoogle();
-      // Note: No need to handle redirect here as it will be done by Supabase
+      // Navigation will be handled by the redirect
     } catch (error: any) {
       console.error('Google sign in error:', error);
       setErrorMessage(error.message || "An error occurred during Google sign in");

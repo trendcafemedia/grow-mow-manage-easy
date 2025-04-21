@@ -11,16 +11,22 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('Auth callback processing...');
+        console.log('Auth callback processing started...');
         
-        // Get the hash fragment from the URL
-        const hashFragment = window.location.hash;
-        console.log('Hash fragment:', hashFragment);
+        // Check if we have an access token in the URL (which indicates a successful OAuth login)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        if (accessToken) {
+          console.log('Access token found in URL, this is a successful OAuth redirect');
+        } else {
+          console.log('No access token in URL, checking for session...');
+        }
         
         // Process the callback
         const { data, error } = await supabase.auth.getSession();
         
-        console.log('Session after callback:', data?.session?.user?.email);
+        console.log('Session after callback:', data?.session ? 'Session exists' : 'No session');
         
         if (error) {
           console.error('Error during auth callback:', error);
@@ -30,13 +36,13 @@ const AuthCallback = () => {
           console.log('Auth callback successful, redirecting to home');
           navigate('/');
         } else {
-          console.log('No session found, redirecting to auth');
-          setError('Authentication failed - no session found');
+          console.log('No session found after callback, redirecting to auth');
+          setError('Authentication failed - no session was established. Please try again.');
           setTimeout(() => navigate('/auth'), 3000);
         }
       } catch (err) {
         console.error('Unexpected error during auth callback:', err);
-        setError('An unexpected error occurred');
+        setError('An unexpected error occurred during authentication');
         setTimeout(() => navigate('/auth'), 3000);
       }
     };
