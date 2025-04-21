@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -29,12 +30,28 @@ const Auth = () => {
         await signIn(email, password);
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message,
+        title: "Authentication Error",
+        description: error.message || "An error occurred during authentication",
       });
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      await signInWithGoogle();
+    } catch (error: any) {
+      console.error('Google sign in error:', error);
+      toast({
+        variant: "destructive",
+        title: "Google Sign In Error",
+        description: error.message || "An error occurred during Google sign in",
+      });
       setIsLoading(false);
     }
   };
@@ -61,14 +78,18 @@ const Auth = () => {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 required
+                className="bg-background"
               />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
                 required
+                className="bg-background"
               />
             </div>
             <Button 
@@ -76,7 +97,14 @@ const Auth = () => {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait...
+                </>
+              ) : (
+                isSignUp ? 'Sign Up' : 'Sign In'
+              )}
             </Button>
           </form>
 
@@ -85,7 +113,7 @@ const Auth = () => {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-card px-2 text-muted-foreground">
                 Or continue with
               </span>
             </div>
@@ -94,11 +122,18 @@ const Auth = () => {
           <Button 
             variant="outline" 
             type="button" 
-            className="w-full"
-            onClick={signInWithGoogle}
+            className="w-full bg-background"
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
           >
-            Google
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait...
+              </>
+            ) : (
+              'Google'
+            )}
           </Button>
 
           <div className="mt-4 text-center text-sm">
@@ -106,6 +141,7 @@ const Auth = () => {
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-primary hover:underline"
+              disabled={isLoading}
             >
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}
             </button>
