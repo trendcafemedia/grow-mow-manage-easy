@@ -1,4 +1,5 @@
 
+import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
@@ -8,11 +9,7 @@ import { Menu, X, Home, Users, Calendar, Package2, Settings } from "lucide-react
 import ThemeToggle from "@/components/ThemeToggle";
 import { AddJobButton } from "@/components/AddJobButton";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-const MainLayout = ({ children }: MainLayoutProps) => {
+const MainLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -112,7 +109,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           {/* Main content */}
           <main className="flex-1">
             <div className="py-6 px-4 sm:px-6 lg:px-8">
-              {children}
+              <Outlet />
             </div>
           </main>
         </div>
