@@ -1,180 +1,172 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Mail, MapPin, Phone, Star, DollarSign } from "lucide-react";
-
-interface CustomerService {
-  id: string;
-  date: string;
-  type: string;
-  status: "completed" | "scheduled" | "cancelled";
-}
-
-interface CustomerReview {
-  id: string;
-  date: string;
-  rating: number;
-  comment: string;
-  kidReply?: string;
-}
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { calculateDirections } from "@/utils/directions";
+import { Loader2, MapPin } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomerDetailsProps {
-  customer: {
-    id: string;
-    name: string;
-    address: string;
-    email: string;
-    phone: string;
-    tags: string[];
-    services: CustomerService[];
-    reviews: CustomerReview[];
-  } | null;
-  open: boolean;
-  onClose: () => void;
+  customerId: string;
+  placeId?: string;
 }
 
-export function CustomerDetails({ customer, open, onClose }: CustomerDetailsProps) {
-  const [activeTab, setActiveTab] = useState<string>("info");
+export function CustomerDetails({ customerId, placeId }: CustomerDetailsProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [placeDetails, setPlaceDetails] = useState<any>(null);
+  const [driveTime, setDriveTime] = useState<string | null>(null);
+  const [businessAddress, setBusinessAddress] = useState<{lat: number, lng: number} | null>(null);
+  const { toast } = useToast();
 
-  if (!customer) return null;
+  useEffect(() => {
+    const fetchBusinessAddress = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('business_profiles')
+          .select('lat, lng')
+          .single();
+        
+        if (error) throw error;
+        
+        if (data && data.lat && data.lng) {
+          setBusinessAddress({ lat: data.lat, lng: data.lng });
+        }
+      } catch (error) {
+        console.error("Error fetching business address:", error);
+      }
+    };
+    
+    fetchBusinessAddress();
+  }, []);
+
+  useEffect(() => {
+    if (!placeId) {
+      setIsLoading(false);
+      return;
+    }
+    
+    const loadPlaceDetails = async () => {
+      if (!window.google || !placeId) return;
+      
+      try {
+        const request = {
+          placeId,
+          fields: ['name', 'formatted_address', 'photos', 'rating', 'website', 'geometry']
+        };
+        
+        const service = new google.maps.places.PlacesService(document.createElement('div'));
+        
+        service.getDetails(request, (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            setPlaceDetails(place);
+          } else {
+            console.error("Error fetching place details:", status);
+          }
+          setIsLoading(false);
+        });
+      } catch (error) {
+        console.error("Error loading place details:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    // Load Google Places library if needed
+    if (window.google && window.google.maps && window.google.maps.places) {
+      loadPlaceDetails();
+    } else {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC8mJIwGe0WCIQVAuCCOpDzZr6i3qH3NQA&libraries=places`;
+      script.async = true;
+      script.onload = () => loadPlaceDetails();
+      document.head.appendChild(script);
+    }
+  }, [placeId]);
+
+  useEffect(() => {
+    const calculateDriveTime = async () => {
+      if (!businessAddress || !placeDetails?.geometry?.location) return;
+      
+      try {
+        const result = await calculateDirections(
+          businessAddress,
+          { 
+            lat: placeDetails.geometry.location.lat(), 
+            lng: placeDetails.geometry.location.lng() 
+          }
+        );
+        
+        if (result) {
+          setDriveTime(result.duration);
+        }
+      } catch (error) {
+        console.error("Error calculating directions:", error);
+      }
+    };
+    
+    if (placeDetails && businessAddress) {
+      calculateDriveTime();
+    }
+  }, [placeDetails, businessAddress]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-4">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!placeId || !placeDetails) {
+    return null;
+  }
 
   return (
-    <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle className="text-xl">{customer.name}</SheetTitle>
-          <SheetDescription>Customer details and history</SheetDescription>
-        </SheetHeader>
-
-        <Tabs defaultValue="info" className="mt-6" onValueChange={setActiveTab}>
-          <TabsList className="w-full">
-            <TabsTrigger value="info" className="flex-1">
-              Info
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex-1">
-              Services
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="flex-1">
-              Reviews
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="info" className="mt-4 space-y-4">
-            <div className="flex flex-col space-y-3">
-              <div className="flex items-start">
-                <MapPin className="h-5 w-5 mr-2 text-muted-foreground shrink-0 mt-0.5" />
-                <span>{customer.address}</span>
-              </div>
-              <div className="flex items-center">
-                <Phone className="h-5 w-5 mr-2 text-muted-foreground" />
-                <span>{customer.phone}</span>
-              </div>
-              <div className="flex items-center">
-                <Mail className="h-5 w-5 mr-2 text-muted-foreground" />
-                <span>{customer.email}</span>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="font-medium mb-2">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {customer.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-muted text-sm rounded-md"
-                  >
-                    {tag}
-                  </span>
+    <Card className="mt-4">
+      <CardContent className="p-4">
+        {placeDetails.photos && placeDetails.photos.length > 0 && (
+          <div className="relative h-32 mb-3 overflow-hidden rounded-md">
+            <img 
+              src={placeDetails.photos[0].getUrl()} 
+              alt={placeDetails.name} 
+              className="object-cover w-full h-full"
+            />
+          </div>
+        )}
+        
+        <div className="space-y-2">
+          {placeDetails.rating && (
+            <div className="flex items-center">
+              <div className="text-yellow-400">
+                {Array.from({ length: Math.floor(placeDetails.rating) }).map((_, i) => (
+                  <span key={i}>★</span>
                 ))}
+                {placeDetails.rating % 1 > 0 && <span>☆</span>}
               </div>
+              <span className="ml-1 text-sm text-gray-600">{placeDetails.rating}</span>
             </div>
-
-            <div className="pt-4 flex">
-              <Button className="flex-1">
-                <Calendar className="mr-2 h-4 w-4" />
-                Schedule Service
-              </Button>
-              <Button variant="outline" className="ml-2 flex-1">
-                <DollarSign className="mr-2 h-4 w-4" />
-                New Invoice
-              </Button>
+          )}
+          
+          {placeDetails.website && (
+            <div>
+              <a 
+                href={placeDetails.website} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                {new URL(placeDetails.website).hostname}
+              </a>
             </div>
-          </TabsContent>
-
-          <TabsContent value="services" className="mt-4">
-            <div className="space-y-4">
-              {customer.services.map((service) => (
-                <div
-                  key={service.id}
-                  className="p-3 border rounded-md"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium">{service.type}</div>
-                      <div className="text-sm text-muted-foreground flex items-center mt-1">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {service.date}
-                      </div>
-                    </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium capitalize
-                      ${service.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                        service.status === 'scheduled' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-red-100 text-red-800'}`
-                    }>
-                      {service.status}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          )}
+          
+          {driveTime && (
+            <div className="flex items-center text-sm">
+              <MapPin className="h-3 w-3 mr-1 text-gray-400" />
+              <span>Drive time: {driveTime}</span>
             </div>
-          </TabsContent>
-
-          <TabsContent value="reviews" className="mt-4">
-            <div className="space-y-4">
-              {customer.reviews.length > 0 ? (
-                customer.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="p-3 border rounded-md"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="text-sm text-muted-foreground">{review.date}</div>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="mt-2 text-sm">{review.comment}</p>
-                    {review.kidReply && (
-                      <div className="mt-3 ml-4 pl-2 border-l-2 border-muted">
-                        <p className="text-sm italic">"{review.kidReply}"</p>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center p-4 text-muted-foreground">
-                  No reviews yet
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </SheetContent>
-    </Sheet>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

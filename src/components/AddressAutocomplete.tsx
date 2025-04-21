@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 
 interface AddressAutocompleteProps {
   value: string;
-  onChange: (value: string, placeData?: { lat: number; lng: number }) => void;
+  onChange: (value: string, placeData?: { lat: number; lng: number; placeId?: string }) => void;
   className?: string;
   error?: string;
   id?: string;
@@ -45,7 +45,7 @@ export function AddressAutocomplete({
     try {
       autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
         types: ["address"],
-        fields: ["formatted_address", "geometry", "name"],
+        fields: ["formatted_address", "geometry", "name", "place_id"],
       });
 
       autocompleteRef.current.addListener("place_changed", () => {
@@ -58,6 +58,7 @@ export function AddressAutocomplete({
             onChange(place.formatted_address, {
               lat: location.lat(),
               lng: location.lng(),
+              placeId: place.place_id,
             });
           } else {
             onChange(place.formatted_address);

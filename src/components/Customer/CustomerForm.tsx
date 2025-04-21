@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +19,7 @@ interface CustomerFormProps {
     tags: string[];
     lat?: number;
     lng?: number;
+    placeId?: string;
   };
   onSuccess: () => void;
   onCancel: () => void;
@@ -35,8 +35,18 @@ interface FormValues {
 
 export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [addressCoordinates, setAddressCoordinates] = useState<{ lat: number; lng: number } | undefined>(
-    customer?.lat && customer?.lng ? { lat: customer.lat, lng: customer.lng } : undefined
+  const [addressData, setAddressData] = useState<{
+    lat: number; 
+    lng: number;
+    placeId?: string;
+  } | undefined>(
+    customer?.lat && customer?.lng 
+      ? { 
+          lat: customer.lat, 
+          lng: customer.lng,
+          placeId: customer.placeId
+        } 
+      : undefined
   );
   const { toast } = useToast();
 
@@ -50,11 +60,11 @@ export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProp
     },
   });
 
-  const handleAddressChange = (value: string, placeData?: { lat: number; lng: number }) => {
+  const handleAddressChange = (value: string, placeData?: { lat: number; lng: number; placeId?: string }) => {
     form.setValue("address", value);
     
     if (placeData) {
-      setAddressCoordinates(placeData);
+      setAddressData(placeData);
     }
   };
 
@@ -73,8 +83,9 @@ export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProp
         email: data.email,
         phone: data.phone,
         tags,
-        lat: addressCoordinates?.lat,
-        lng: addressCoordinates?.lng,
+        lat: addressData?.lat,
+        lng: addressData?.lng,
+        placeId: addressData?.placeId,
         // In a real app, this would come from the authenticated user
         user_id: (await supabase.auth.getUser()).data.user?.id,
       };
