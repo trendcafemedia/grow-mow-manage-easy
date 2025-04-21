@@ -12,15 +12,27 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('Auth callback processing...');
-        const { error } = await supabase.auth.getSession();
+        
+        // Get the hash fragment from the URL
+        const hashFragment = window.location.hash;
+        console.log('Hash fragment:', hashFragment);
+        
+        // Process the callback
+        const { data, error } = await supabase.auth.getSession();
+        
+        console.log('Session after callback:', data?.session?.user?.email);
         
         if (error) {
           console.error('Error during auth callback:', error);
           setError(error.message);
           setTimeout(() => navigate('/auth'), 3000);
-        } else {
+        } else if (data?.session) {
           console.log('Auth callback successful, redirecting to home');
           navigate('/');
+        } else {
+          console.log('No session found, redirecting to auth');
+          setError('Authentication failed - no session found');
+          setTimeout(() => navigate('/auth'), 3000);
         }
       } catch (err) {
         console.error('Unexpected error during auth callback:', err);

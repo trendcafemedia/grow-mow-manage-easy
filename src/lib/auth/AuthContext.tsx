@@ -23,26 +23,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Set up auth state listener FIRST - prevent deadlock
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log('Auth state changed:', event, currentSession?.user?.email);
+      
+      // Only update state synchronously here - no Supabase calls
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
-
-      if (event === 'SIGNED_IN') {
-        navigate('/');
+      
+      // Handle navigation separately without blocking
+      if (event === 'SIGNED_IN' && !window.location.pathname.includes('/auth/callback')) {
+        setTimeout(() => navigate('/'), 0);
       }
       if (event === 'SIGNED_OUT') {
-        navigate('/auth');
+        setTimeout(() => navigate('/auth'), 0);
       }
     });
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log('Initial session check:', initialSession?.user?.email);
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
       setLoading(false);
     });
 
@@ -69,17 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     // Get the current URL to determine if we're in production or development
-    const isProduction = window.location.hostname !== 'localhost';
-    const redirectTo = isProduction
-      ? `${window.location.origin}/auth/callback`
-      : `${window.location.origin}/auth/callback`;
+    const origin = window.location.origin;
+    const redirectUrl = `${origin}/auth/callback`;
     
-    console.log('Signing in with Google, redirect to:', redirectTo);
+    console.log('Signing in with Google, redirect to:', redirectUrl);
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo,
+        redirectTo: redirectUrl,
       },
     });
     if (error) throw error;

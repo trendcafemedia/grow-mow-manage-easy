@@ -6,18 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       if (isSignUp) {
@@ -31,6 +34,7 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      setErrorMessage(error.message || "An error occurred during authentication");
       toast({
         variant: "destructive",
         title: "Authentication Error",
@@ -44,9 +48,12 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
+      setErrorMessage(null);
       await signInWithGoogle();
+      // Note: No need to handle redirect here as it will be done by Supabase
     } catch (error: any) {
       console.error('Google sign in error:', error);
+      setErrorMessage(error.message || "An error occurred during Google sign in");
       toast({
         variant: "destructive",
         title: "Google Sign In Error",
@@ -71,6 +78,12 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
