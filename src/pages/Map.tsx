@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +37,7 @@ const Map = () => {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyC8mJIwGe0WCIQVAuCCOpDzZr6i3qH3NQA", // Using the provided API key
+    googleMapsApiKey: "AIzaSyC8mJIwGe0WCIQVAuCCOpDzZr6i3qH3NQA",
     libraries: ["places"],
   });
 
@@ -51,8 +50,7 @@ const Map = () => {
           .single();
 
         if (businessProfile?.address) {
-          // Geocode the business address (in production, this would be pre-computed)
-          // For now, we'll keep using the default center
+          // For now using default center, in production would geocode business address
         }
       } catch (error) {
         console.error("Error fetching business profile:", error);
@@ -64,17 +62,17 @@ const Map = () => {
         const { data, error } = await supabase
           .from("customers")
           .select(`
-            id, 
-            name, 
-            address, 
-            lat, 
-            lng, 
-            services(
-              id, 
-              scheduled_at, 
-              invoices(
-                id, 
-                amount, 
+            id,
+            name,
+            address,
+            lat,
+            lng,
+            services (
+              id,
+              scheduled_at,
+              invoices (
+                id,
+                amount,
                 status
               )
             )
@@ -84,12 +82,11 @@ const Map = () => {
 
         if (data) {
           const customersWithStatus = data.map((customer) => {
-            // Determine status based on services and invoices
+            // Mock status logic - in production would calculate from services/invoices
             let status: "paid" | "upcoming" | "unpaid" | "overdue" = "paid";
             let amountDue = 0;
             let nextService = "";
 
-            // Mock data for demonstration - in real app, calculate from services
             const randomStatus = Math.floor(Math.random() * 4);
             switch (randomStatus) {
               case 0: status = "paid"; break;
@@ -98,20 +95,15 @@ const Map = () => {
               case 3: status = "overdue"; amountDue = 75; break;
             }
 
-            // Mock next service date
             const today = new Date();
             const nextServiceDate = new Date(today);
             nextServiceDate.setDate(today.getDate() + Math.floor(Math.random() * 14));
             nextService = nextServiceDate.toLocaleDateString();
 
-            // Mock coordinates if not available
-            const lat = customer.lat || (39.8283 + (Math.random() * 10 - 5));
-            const lng = customer.lng || (-98.5795 + (Math.random() * 20 - 10));
-
             return {
               ...customer,
-              lat,
-              lng,
+              lat: customer.lat || (39.8283 + (Math.random() * 10 - 5)),
+              lng: customer.lng || (-98.5795 + (Math.random() * 20 - 10)),
               status,
               nextService,
               amountDue,
@@ -182,7 +174,10 @@ const Map = () => {
                 {customers.map((customer) => (
                   <MarkerF
                     key={customer.id}
-                    position={{ lat: customer.lat || defaultCenter.lat, lng: customer.lng || defaultCenter.lng }}
+                    position={{ 
+                      lat: customer.lat || defaultCenter.lat, 
+                      lng: customer.lng || defaultCenter.lng 
+                    }}
                     icon={{
                       url: getMarkerIcon(customer.status),
                       scaledSize: new google.maps.Size(30, 30),
