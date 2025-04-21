@@ -1,4 +1,3 @@
-
 # You Grow I Mow - Landscaping Business Manager
 
 A kid-friendly landscaping business manager designed to help young entrepreneurs manage their lawn care services.
@@ -75,6 +74,17 @@ To set up Google Maps:
   - 5,000 monthly Places API requests
   - 5,000 monthly Directions API requests
 - Set up billing alerts to avoid unexpected charges
+
+## Authentication Setup
+
+For authentication to work properly, you need to configure the following in your Supabase project:
+
+1. Set the Site URL to: `https://grow-mow-manage-easy.vercel.app`
+2. Add the following Redirect URLs:
+   - `https://grow-mow-manage-easy.vercel.app/auth/callback`
+   - `http://localhost:5173/auth/callback` (for local development)
+
+This ensures proper authentication flow in both development and production environments.
 
 ## iOS Build with Capacitor
 

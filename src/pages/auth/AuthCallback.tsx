@@ -12,7 +12,8 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('Auth callback processing started...');
-        console.log('Current URL:', window.location.href);
+        const deployedUrl = 'https://grow-mow-manage-easy.vercel.app';
+        console.log('Deployed URL:', deployedUrl);
         
         // Check for OAuth token in URL
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -24,7 +25,7 @@ const AuthCallback = () => {
           console.log('No access token in URL, checking for session...');
         }
         
-        // Process the callback - this should exchange the token in the URL for a session
+        // Process the callback
         const { data, error } = await supabase.auth.getSession();
         
         if (data?.session) {

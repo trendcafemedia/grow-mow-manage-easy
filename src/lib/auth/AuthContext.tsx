@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -76,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     // Build absolute URL for the callback
-    const deployedUrl = window.location.origin;
+    const deployedUrl = 'https://grow-mow-manage-easy.vercel.app';
     const redirectUrl = `${deployedUrl}/auth/callback`;
     
     console.log('Signing in with Google, redirecting to:', redirectUrl);
