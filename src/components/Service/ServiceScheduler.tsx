@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { calculateDirections } from "@/utils/directions";
 import { Loader2 } from "lucide-react";
@@ -25,7 +24,7 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
         // Fetch business location
         const { data: business, error: businessError } = await supabase
           .from('business_profiles')
-          .select('address')
+          .select('lat, lng')
           .single();
         
         if (businessError) throw businessError;
@@ -39,17 +38,10 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
         
         if (customerError) throw customerError;
         
-        // Check if business location exists with geocoding if needed
-        let businessCoords = null;
-        let customerCoords = null;
-        
-        // If we have customer coordinates
-        if (customer && typeof customer.lat === 'number' && typeof customer.lng === 'number') {
-          customerCoords = { lat: customer.lat, lng: customer.lng };
-          
-          // For business, use a default location since lat/lng columns might not exist yet
-          // In a real app, you'd geocode the business.address, but for now use a default
-          businessCoords = { lat: 40.7128, lng: -74.0060 }; // Default NYC coordinates
+        // Check if we have both coordinates
+        if (business?.lat && business?.lng && customer?.lat && customer?.lng) {
+          const businessCoords = { lat: business.lat, lng: business.lng };
+          const customerCoords = { lat: customer.lat, lng: customer.lng };
           
           const result = await calculateDirections(
             businessCoords,
@@ -64,7 +56,7 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
               toast({
                 title: "Long drive time",
                 description: `This customer is ${result.duration} away. Consider rescheduling other jobs.`,
-                variant: "destructive", // Using destructive instead of warning
+                variant: "destructive",
               });
             }
           }

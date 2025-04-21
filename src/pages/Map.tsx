@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,11 +16,20 @@ interface Customer {
   address: string;
   lat: number | null;
   lng: number | null;
-  placeId?: string; // Make placeId optional
+  place_id?: string;
   status: "paid" | "upcoming" | "unpaid" | "overdue";
   nextService?: string;
   daysUntilNextService?: number;
   amountDue?: number;
+  services?: {
+    id: string;
+    scheduled_at: string;
+    invoices: {
+      id: string;
+      amount: number;
+      status: string;
+    }[];
+  }[];
 }
 
 const mapContainerStyle = {
@@ -50,15 +58,16 @@ const Map = () => {
     const fetchBusinessAddressAndCustomers = async () => {
       try {
         // First, fetch business profile for default center
-        const { data: businessProfile } = await supabase
+        const { data: businessProfile, error: businessError } = await supabase
           .from("business_profiles")
-          .select("address")
+          .select("lat, lng")
           .single();
 
-        // Since lat/lng might not exist in business_profiles yet,
-        // we'll keep using the default center
+        if (!businessError && businessProfile?.lat && businessProfile?.lng) {
+          setCenter({ lat: businessProfile.lat, lng: businessProfile.lng });
+        }
 
-        // Then fetch customers with coordinates and handle the potential missing placeId column
+        // Fetch customers with coordinates and service data
         const { data, error } = await supabase
           .from("customers")
           .select(`
@@ -67,7 +76,7 @@ const Map = () => {
             address,
             lat,
             lng,
-            placeId, 
+            place_id,
             services (
               id,
               scheduled_at,
@@ -83,12 +92,12 @@ const Map = () => {
 
         if (data) {
           const today = new Date();
-          const customersWithStatus = data.map((customer) => {
+          const customersWithStatus = data.map((customer): Customer => {
             // Calculate status based on next service date and payment status
             let status: "paid" | "upcoming" | "unpaid" | "overdue" = "paid";
             let amountDue = 0;
             let nextService = "";
-            let daysUntilNextService = 999; // Large default value
+            let daysUntilNextService = 999;
 
             // Get the next service date if available
             if (customer.services && customer.services.length > 0) {
@@ -145,12 +154,12 @@ const Map = () => {
               address: customer.address || "",
               lat: customer.lat || (39.8283 + (Math.random() * 10 - 5)),
               lng: customer.lng || (-98.5795 + (Math.random() * 20 - 10)),
-              // Only add placeId if it exists in the customer data
-              ...(customer.placeId ? { placeId: customer.placeId } : {}),
+              place_id: customer.place_id,
               status,
               nextService,
               daysUntilNextService,
               amountDue,
+              services: customer.services,
             };
           });
 
@@ -283,11 +292,11 @@ const Map = () => {
                             {selectedMarker.status}
                           </span>
                         </p>
-                        {/* Only render the Google Maps link if placeId exists */}
-                        {selectedMarker.placeId && (
+                        {/* Only render the Google Maps link if place_id exists */}
+                        {selectedMarker.place_id && (
                           <div className="mt-2">
                             <a 
-                              href={`https://www.google.com/maps/?q=place_id:${selectedMarker.placeId}`}
+                              href={`https://www.google.com/maps/?q=place_id:${selectedMarker.place_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline flex items-center"
@@ -320,10 +329,10 @@ const Map = () => {
                         <h3 className="font-medium">{customer.name}</h3>
                         <p className="text-sm text-muted-foreground">{customer.address}</p>
                         <p className="text-sm mt-1">Next Service: {customer.nextService}</p>
-                        {/* Only render the Google Maps link if placeId exists */}
-                        {customer.placeId && (
+                        {/* Only render the Google Maps link if place_id exists */}
+                        {customer.place_id && (
                           <a 
-                            href={`https://www.google.com/maps/?q=place_id:${customer.placeId}`}
+                            href={`https://www.google.com/maps/?q=place_id:${customer.place_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-primary hover:underline flex items-center mt-1"

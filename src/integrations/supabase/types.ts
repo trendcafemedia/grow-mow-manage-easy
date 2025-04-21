@@ -20,6 +20,8 @@ export type Database = {
           enable_stripe: boolean | null
           id: string
           inventory_on: boolean | null
+          lat: number | null
+          lng: number | null
           logo: string | null
           phone: string | null
           updated_at: string | null
@@ -35,6 +37,8 @@ export type Database = {
           enable_stripe?: boolean | null
           id?: string
           inventory_on?: boolean | null
+          lat?: number | null
+          lng?: number | null
           logo?: string | null
           phone?: string | null
           updated_at?: string | null
@@ -50,6 +54,8 @@ export type Database = {
           enable_stripe?: boolean | null
           id?: string
           inventory_on?: boolean | null
+          lat?: number | null
+          lng?: number | null
           logo?: string | null
           phone?: string | null
           updated_at?: string | null
@@ -68,6 +74,7 @@ export type Database = {
           name: string
           phone: string | null
           photo_url: string | null
+          place_id: string | null
           tags: string[] | null
           updated_at: string | null
           user_id: string
@@ -82,6 +89,7 @@ export type Database = {
           name: string
           phone?: string | null
           photo_url?: string | null
+          place_id?: string | null
           tags?: string[] | null
           updated_at?: string | null
           user_id: string
@@ -96,6 +104,7 @@ export type Database = {
           name?: string
           phone?: string | null
           photo_url?: string | null
+          place_id?: string | null
           tags?: string[] | null
           updated_at?: string | null
           user_id?: string
