@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Home, Users, Calendar, Package2, Settings } from "lucide-react";
+import { Menu, X, Home, Users, Calendar, Package2, Settings, Map } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { AddJobButton } from "@/components/AddJobButton";
 
@@ -21,6 +21,7 @@ const MainLayout = () => {
     { name: "Dashboard", path: "/", icon: Home },
     { name: "Customers", path: "/customers", icon: Users },
     { name: "Calendar", path: "/calendar", icon: Calendar },
+    { name: "Map", path: "/map", icon: Map },
     { name: "Inventory", path: "/inventory", icon: Package2 },
     { name: "Settings", path: "/settings", icon: Settings },
   ];
