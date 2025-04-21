@@ -1,73 +1,71 @@
-# Welcome to your Lovable project
 
-## Project info
+# You Grow I Mow - Landscaping Business Manager
 
-**URL**: https://lovable.dev/projects/7422fb2f-8122-468b-afea-38a43fd8107e
+A kid-friendly landscaping business manager designed to help young entrepreneurs manage their lawn care services.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Dashboard**: View earnings, upcoming jobs, and weather forecasts
+- **Customer Management**: Keep track of all your customers and their service history
+- **Calendar**: Schedule and manage jobs with upcoming appointments view
+- **Inventory**: Track equipment, supplies, and fuel usage
+- **Settings**: Configure your business profile and app preferences
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7422fb2f-8122-468b-afea-38a43fd8107e) and start prompting.
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Shadcn UI, TanStack Query v5, React Router
+- **Backend**: Node 18, Express, TypeScript, Prisma ORM, PostgreSQL (Supabase)
+- **Auth**: Supabase email / Google OAuth
+- **Payments**: Stripe Checkout
+- **Calendar**: Google Calendar API sync
+- **Weather**: OpenWeatherMap REST API
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Development Setup
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+To run the project in development mode:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Install dependencies
+npm install
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at http://localhost:8080
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+- `/src/components` - Reusable UI components
+- `/src/pages` - Main application pages
+- `/src/lib` - Utility functions and helpers
+- `/src/hooks` - Custom React hooks
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Next Steps
 
-## What technologies are used for this project?
+This initial version includes the frontend UI with mock data. To complete the application:
 
-This project is built with:
+1. Connect to Supabase for authentication and database
+2. Implement the Stripe integration for payments
+3. Add Google Calendar sync functionality
+4. Integrate OpenWeatherMap API for real weather data
+5. Set up automated notifications for appointment reminders
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Environment Variables
 
-## How can I deploy this project?
+For the complete application, you'll need to set up the following environment variables:
 
-Simply open [Lovable](https://lovable.dev/projects/7422fb2f-8122-468b-afea-38a43fd8107e) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_ANON_KEY
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+OWM_API_KEY
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+GOOGLE_CALENDAR_ID
+NEXT_PUBLIC_BASE_URL
+```
