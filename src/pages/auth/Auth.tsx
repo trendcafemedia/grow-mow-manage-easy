@@ -31,7 +31,7 @@ const Auth = () => {
         });
       } else {
         await signIn(email, password);
-        // Note: Navigation is handled by auth context via onAuthStateChange
+        // Navigation is handled by auth context via onAuthStateChange
       }
     } catch (error: any) {
       console.error('Auth error:', error);

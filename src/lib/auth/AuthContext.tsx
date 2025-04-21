@@ -23,16 +23,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST - prevent deadlock
+    console.log('AuthProvider initializing...');
+    
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       console.log('Auth state changed:', event, currentSession?.user?.email);
       
-      // Only update state synchronously here - no Supabase calls
+      // Update state synchronously
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
       
-      // Handle navigation separately without blocking
+      // Handle navigation separately
       if (event === 'SIGNED_IN' && !window.location.pathname.includes('/auth/callback')) {
         console.log('Signed in event detected, navigating to home');
         setTimeout(() => navigate('/'), 0);
@@ -73,12 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    // Get window location for absolute URLs
-    const currentUrl = window.location;
-    const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`;
-    const redirectUrl = `${baseUrl}/auth/callback`;
+    // Build absolute URL for the callback
+    const deployedUrl = window.location.origin;
+    const redirectUrl = `${deployedUrl}/auth/callback`;
     
-    console.log('Signing in with Google, redirect to:', redirectUrl);
+    console.log('Signing in with Google, redirecting to:', redirectUrl);
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -12,8 +12,9 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('Auth callback processing started...');
+        console.log('Current URL:', window.location.href);
         
-        // Check if we have an access token in the URL (which indicates a successful OAuth login)
+        // Check for OAuth token in URL
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         
@@ -23,10 +24,14 @@ const AuthCallback = () => {
           console.log('No access token in URL, checking for session...');
         }
         
-        // Process the callback
+        // Process the callback - this should exchange the token in the URL for a session
         const { data, error } = await supabase.auth.getSession();
         
-        console.log('Session after callback:', data?.session ? 'Session exists' : 'No session');
+        if (data?.session) {
+          console.log('Session exists after callback:', data.session.user?.email);
+        } else {
+          console.log('No session found after callback');
+        }
         
         if (error) {
           console.error('Error during auth callback:', error);
@@ -36,8 +41,8 @@ const AuthCallback = () => {
           console.log('Auth callback successful, redirecting to home');
           navigate('/');
         } else {
-          console.log('No session found after callback, redirecting to auth');
-          setError('Authentication failed - no session was established. Please try again.');
+          console.log('No session established, redirecting to auth');
+          setError('Authentication failed. Please try again.');
           setTimeout(() => navigate('/auth'), 3000);
         }
       } catch (err) {

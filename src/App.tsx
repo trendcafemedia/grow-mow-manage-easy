@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthContext";
 import MainLayout from "./components/layout/MainLayout";
 
@@ -21,64 +21,62 @@ import Map from "./pages/Map";
 
 const queryClient = new QueryClient();
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  // Show nothing while auth state is loading
-  if (loading) {
-    return null;
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  return <>{children}</>;
-};
+// App with Auth Provider
+const AppWithAuth = () => (
+  <BrowserRouter>
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  </BrowserRouter>
+);
 
-// Public route that redirects if user is authenticated
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+// Routes component
+const AppRoutes = () => {
   const { user, loading } = useAuth();
   
-  // Show nothing while auth state is loading
+  // Show nothing while auth is loading
   if (loading) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
   }
   
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return <>{children}</>;
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <Routes>
+        {/* Public routes */}
+        <Route 
+          path="/auth" 
+          element={!user ? <Auth /> : <Navigate to="/" replace />} 
+        />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        
+        {/* Protected routes */}
+        <Route 
+          element={user ? <MainLayout /> : <Navigate to="/auth" replace />}
+        >
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/map" element={<Map />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </>
+  );
 };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light">
       <TooltipProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              {/* Public routes */}
-              <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              
-              {/* Protected routes */}
-              <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/map" element={<Map />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
+        <AppWithAuth />
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
