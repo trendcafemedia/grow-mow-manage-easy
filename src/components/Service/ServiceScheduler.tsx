@@ -64,7 +64,7 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
               toast({
                 title: "Long drive time",
                 description: `This customer is ${result.duration} away. Consider rescheduling other jobs.`,
-                variant: "destructive", // Changed from "warning" to "destructive" as warning isn't a valid variant
+                variant: "destructive", // Using destructive instead of warning
               });
             }
           }

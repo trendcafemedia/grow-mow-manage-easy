@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,7 @@ interface Customer {
   address: string;
   lat: number | null;
   lng: number | null;
-  placeId?: string;
+  placeId?: string; // Make placeId optional
   status: "paid" | "upcoming" | "unpaid" | "overdue";
   nextService?: string;
   daysUntilNextService?: number;
@@ -66,6 +67,7 @@ const Map = () => {
             address,
             lat,
             lng,
+            placeId, 
             services (
               id,
               scheduled_at,
@@ -143,7 +145,7 @@ const Map = () => {
               address: customer.address || "",
               lat: customer.lat || (39.8283 + (Math.random() * 10 - 5)),
               lng: customer.lng || (-98.5795 + (Math.random() * 20 - 10)),
-              // Add placeId only if it exists in the customer object
+              // Only add placeId if it exists in the customer data
               ...(customer.placeId ? { placeId: customer.placeId } : {}),
               status,
               nextService,
@@ -281,6 +283,7 @@ const Map = () => {
                             {selectedMarker.status}
                           </span>
                         </p>
+                        {/* Only render the Google Maps link if placeId exists */}
                         {selectedMarker.placeId && (
                           <div className="mt-2">
                             <a 
@@ -317,6 +320,7 @@ const Map = () => {
                         <h3 className="font-medium">{customer.name}</h3>
                         <p className="text-sm text-muted-foreground">{customer.address}</p>
                         <p className="text-sm mt-1">Next Service: {customer.nextService}</p>
+                        {/* Only render the Google Maps link if placeId exists */}
                         {customer.placeId && (
                           <a 
                             href={`https://www.google.com/maps/?q=place_id:${customer.placeId}`}
