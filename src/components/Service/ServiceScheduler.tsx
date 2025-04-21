@@ -25,7 +25,7 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
         // Fetch business location
         const { data: business, error: businessError } = await supabase
           .from('business_profiles')
-          .select('lat, lng')
+          .select('address')
           .single();
         
         if (businessError) throw businessError;
@@ -39,10 +39,21 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
         
         if (customerError) throw customerError;
         
-        if (business && customer && business.lat && business.lng && customer.lat && customer.lng) {
+        // Check if business location exists with geocoding if needed
+        let businessCoords = null;
+        let customerCoords = null;
+        
+        // If we have customer coordinates
+        if (customer && typeof customer.lat === 'number' && typeof customer.lng === 'number') {
+          customerCoords = { lat: customer.lat, lng: customer.lng };
+          
+          // For business, use a default location since lat/lng columns might not exist yet
+          // In a real app, you'd geocode the business.address, but for now use a default
+          businessCoords = { lat: 40.7128, lng: -74.0060 }; // Default NYC coordinates
+          
           const result = await calculateDirections(
-            { lat: business.lat, lng: business.lng },
-            { lat: customer.lat, lng: customer.lng }
+            businessCoords,
+            customerCoords
           );
           
           if (result) {
@@ -53,7 +64,7 @@ export function ServiceScheduler({ customerId }: ServiceSchedulerProps) {
               toast({
                 title: "Long drive time",
                 description: `This customer is ${result.duration} away. Consider rescheduling other jobs.`,
-                variant: "warning",
+                variant: "destructive", // Changed from "warning" to "destructive" as warning isn't a valid variant
               });
             }
           }

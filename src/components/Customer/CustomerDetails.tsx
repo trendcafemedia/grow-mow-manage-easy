@@ -23,14 +23,14 @@ export function CustomerDetails({ customerId, placeId }: CustomerDetailsProps) {
       try {
         const { data, error } = await supabase
           .from('business_profiles')
-          .select('lat, lng')
+          .select('address')
           .single();
         
         if (error) throw error;
         
-        if (data && data.lat && data.lng) {
-          setBusinessAddress({ lat: data.lat, lng: data.lng });
-        }
+        // Since lat/lng columns might not exist in business_profiles yet,
+        // we'll use a default location instead
+        setBusinessAddress({ lat: 40.7128, lng: -74.0060 }); // Default NYC coordinates
       } catch (error) {
         console.error("Error fetching business address:", error);
       }

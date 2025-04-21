@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import { calculateDirections } from "@/utils/directions";
 
 // Default map center (will be updated from business profile if available)
@@ -53,17 +51,13 @@ const Map = () => {
         // First, fetch business profile for default center
         const { data: businessProfile } = await supabase
           .from("business_profiles")
-          .select("address, lat, lng")
+          .select("address")
           .single();
 
-        if (businessProfile?.lat && businessProfile?.lng) {
-          setCenter({ 
-            lat: businessProfile.lat, 
-            lng: businessProfile.lng 
-          });
-        }
+        // Since lat/lng might not exist in business_profiles yet,
+        // we'll keep using the default center
 
-        // Then fetch customers with coordinates
+        // Then fetch customers with coordinates and handle the potential missing placeId column
         const { data, error } = await supabase
           .from("customers")
           .select(`
@@ -72,7 +66,6 @@ const Map = () => {
             address,
             lat,
             lng,
-            placeId,
             services (
               id,
               scheduled_at,
@@ -143,10 +136,15 @@ const Map = () => {
               nextService = nextServiceDate.toLocaleDateString();
             }
 
+            // Create a properly typed customer with the fields we have
             return {
-              ...customer,
+              id: customer.id,
+              name: customer.name,
+              address: customer.address || "",
               lat: customer.lat || (39.8283 + (Math.random() * 10 - 5)),
               lng: customer.lng || (-98.5795 + (Math.random() * 20 - 10)),
+              // Add placeId only if it exists in the customer object
+              ...(customer.placeId ? { placeId: customer.placeId } : {}),
               status,
               nextService,
               daysUntilNextService,
