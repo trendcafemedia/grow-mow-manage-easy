@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +14,8 @@ interface Customer {
   id: string;
   name: string;
   address: string;
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   status: "paid" | "upcoming" | "unpaid" | "overdue";
   nextService?: string;
   amountDue?: number;
@@ -37,7 +38,8 @@ const Map = () => {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "API_KEY_HERE", // This should be retrieved from environment variables
+    googleMapsApiKey: "AIzaSyC8mJIwGe0WCIQVAuCCOpDzZr6i3qH3NQA", // Using the provided API key
+    libraries: ["places"],
   });
 
   useEffect(() => {
@@ -103,8 +105,8 @@ const Map = () => {
             nextService = nextServiceDate.toLocaleDateString();
 
             // Mock coordinates if not available
-            const lat = customer.lat || 39.8283 + (Math.random() * 10 - 5);
-            const lng = customer.lng || -98.5795 + (Math.random() * 20 - 10);
+            const lat = customer.lat || (39.8283 + (Math.random() * 10 - 5));
+            const lng = customer.lng || (-98.5795 + (Math.random() * 20 - 10));
 
             return {
               ...customer,
@@ -180,7 +182,7 @@ const Map = () => {
                 {customers.map((customer) => (
                   <MarkerF
                     key={customer.id}
-                    position={{ lat: customer.lat, lng: customer.lng }}
+                    position={{ lat: customer.lat || defaultCenter.lat, lng: customer.lng || defaultCenter.lng }}
                     icon={{
                       url: getMarkerIcon(customer.status),
                       scaledSize: new google.maps.Size(30, 30),
@@ -191,7 +193,10 @@ const Map = () => {
 
                 {selectedMarker && (
                   <InfoWindowF
-                    position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
+                    position={{ 
+                      lat: selectedMarker.lat || defaultCenter.lat, 
+                      lng: selectedMarker.lng || defaultCenter.lng 
+                    }}
                     onCloseClick={() => setSelectedMarker(null)}
                   >
                     <div className="p-2 max-w-xs">

@@ -35,7 +35,7 @@ export function AddressAutocomplete({
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "API_KEY_HERE", // This should be retrieved from environment variables
+    googleMapsApiKey: "AIzaSyC8mJIwGe0WCIQVAuCCOpDzZr6i3qH3NQA", // Using the provided API key
     libraries,
   });
 
