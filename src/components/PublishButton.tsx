@@ -1,6 +1,4 @@
 
-// If this file exists, update any hardcoded URLs
-// (Note: This is a hypothetical file, as no existing PublishButton was found in the current code)
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
