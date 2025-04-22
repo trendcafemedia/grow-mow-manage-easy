@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar, DollarSign, User, Clock } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -11,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [businessProfile, setBusinessProfile] = useState({ 
-    address: "Your Address",
     city: "Your City", 
     state: "State" 
   });
@@ -22,29 +20,11 @@ const Dashboard = () => {
       try {
         const { data, error } = await supabase
           .from('business_profiles')
-          .select('address')
+          .select('city, state')
           .single();
         
-        if (data && data.address) {
-          // Extract city and state from address if available
-          const addressParts = data.address.split(',');
-          let city = "Your City";
-          let state = "State";
-          
-          if (addressParts.length >= 2) {
-            // Usually city is the second-to-last part and state is in the last part
-            city = addressParts[addressParts.length - 2].trim();
-            
-            // State might be combined with ZIP code, so we just take the first part
-            const stateZipPart = addressParts[addressParts.length - 1].trim();
-            state = stateZipPart.split(' ')[0].trim();
-          }
-          
-          setBusinessProfile({
-            address: data.address,
-            city,
-            state
-          });
+        if (data) {
+          setBusinessProfile(data);
         }
       } catch (error) {
         console.error("Error fetching business profile:", error);

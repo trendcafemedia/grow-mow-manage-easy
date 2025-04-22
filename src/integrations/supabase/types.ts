@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           address: string | null
           business_name: string
+          city: string | null
           created_at: string | null
           dark_mode: boolean | null
           default_tax: number | null
@@ -24,12 +25,14 @@ export type Database = {
           lng: number | null
           logo: string | null
           phone: string | null
+          state: string | null
           updated_at: string | null
           weather_cache: Json | null
         }
         Insert: {
           address?: string | null
           business_name: string
+          city?: string | null
           created_at?: string | null
           dark_mode?: boolean | null
           default_tax?: number | null
@@ -41,12 +44,14 @@ export type Database = {
           lng?: number | null
           logo?: string | null
           phone?: string | null
+          state?: string | null
           updated_at?: string | null
           weather_cache?: Json | null
         }
         Update: {
           address?: string | null
           business_name?: string
+          city?: string | null
           created_at?: string | null
           dark_mode?: boolean | null
           default_tax?: number | null
@@ -58,6 +63,7 @@ export type Database = {
           lng?: number | null
           logo?: string | null
           phone?: string | null
+          state?: string | null
           updated_at?: string | null
           weather_cache?: Json | null
         }
