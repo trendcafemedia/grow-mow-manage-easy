@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/auth/Auth";
 import AuthCallback from "./pages/auth/AuthCallback";
 import Map from "./pages/Map";
+import LoginPage from "./pages/auth/LoginPage";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +51,7 @@ const AppRoutes = () => {
         {/* Public routes */}
         <Route 
           path="/auth" 
-          element={!user && !isDevelopment ? <Auth /> : <Navigate to="/" replace />} 
+          element={!user && !isDevelopment ? <LoginPage /> : <Navigate to="/" replace />} 
         />
         <Route path="/auth/callback" element={<AuthCallback />} />
         

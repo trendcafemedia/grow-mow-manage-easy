@@ -25,12 +25,20 @@ export function CustomerStatusBar({ customer }: CustomerStatusBarProps) {
   };
 
   return (
-    <div className="flex items-center space-x-2 mb-3 p-2 hover:bg-green-50 rounded-md transition-colors">
+    <div className="flex items-center space-x-2 mb-3 p-3 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-100">
       <div className="flex-1 pr-2">
-        <div className="text-sm font-medium">{customer.name}</div>
-        <div className="text-xs text-muted-foreground">
-          {customer.nextService && `Next: ${customer.nextService}`}
-          {customer.amountDue && ` • $${customer.amountDue.toFixed(2)} due`}
+        <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+        <div className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+          {customer.nextService && (
+            <span className="flex items-center">
+              📅 {customer.nextService}
+            </span>
+          )}
+          {customer.amountDue && (
+            <span className="flex items-center">
+              💰 ${customer.amountDue.toFixed(2)} due
+            </span>
+          )}
         </div>
       </div>
       <div 
