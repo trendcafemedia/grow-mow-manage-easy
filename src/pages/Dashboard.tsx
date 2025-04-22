@@ -65,11 +65,22 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <User className="mr-1 h-4 w-4" /> Kid Mode: Tommy
+      </div>
+
+      {/* Weather forecast - moved to top */}
+      <WeatherForecast />
+
+      {/* Customer status section */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Customer Status</h2>
+        <div className="bg-card rounded-lg p-4 border">
+          {customers.map((customer) => (
+            <CustomerStatusBar key={customer.id} customer={customer} />
+          ))}
         </div>
       </div>
 
+      {/* Stat cards section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <StatCard
@@ -80,17 +91,6 @@ const Dashboard = () => {
             description={stat.description}
           />
         ))}
-      </div>
-
-      <WeatherForecast />
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Customer Status</h2>
-        <div className="bg-card rounded-lg p-4 border">
-          {customers.map((customer) => (
-            <CustomerStatusBar key={customer.id} customer={customer} />
-          ))}
-        </div>
       </div>
     </div>
   );

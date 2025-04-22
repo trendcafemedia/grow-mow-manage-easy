@@ -1,20 +1,64 @@
 
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Home, Users, Calendar, Package2, Settings, Map } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  Home, 
+  Users, 
+  Calendar, 
+  Package2, 
+  Settings, 
+  Map,
+  LogOut,
+  UserRound,
+  HelpCircle
+} from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { AddJobButton } from "@/components/AddJobButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const MainLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account",
+      });
+      navigate('/auth');
+    } catch (error) {
+      toast({
+        title: "Sign out failed",
+        description: "There was a problem signing you out",
+        variant: "destructive",
+      });
+      console.error("Sign out error:", error);
+    }
   };
 
   const navigationItems = [
@@ -78,7 +122,10 @@ const MainLayout = () => {
                 <span className="font-bold text-lg tracking-tight">You Grow I Mow</span>
               </Link>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center space-x-2">
+              <ThemeToggle />
+              <UserMenu user={user} handleSignOut={handleSignOut} />
+            </div>
           </div>
 
           {/* Mobile navigation menu */}
@@ -107,8 +154,11 @@ const MainLayout = () => {
             </div>
           )}
 
-          {/* Main content */}
+          {/* Main content with User Menu in desktop view */}
           <main className="flex-1">
+            <div className="hidden md:flex items-center justify-end p-4 border-b">
+              <UserMenu user={user} handleSignOut={handleSignOut} />
+            </div>
             <div className="py-6 px-4 sm:px-6 lg:px-8">
               <Outlet />
             </div>
@@ -119,6 +169,45 @@ const MainLayout = () => {
         <AddJobButton />
       </div>
     </SidebarProvider>
+  );
+};
+
+// User avatar dropdown menu component
+const UserMenu = ({ user, handleSignOut }: { user: any, handleSignOut: () => Promise<void> }) => {
+  const navigate = useNavigate();
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src="/placeholder.svg" alt="Business Logo" />
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              <UserRound className="h-6 w-6" />
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel>
+          {user?.email || 'My Account'}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate('/settings')}>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <HelpCircle className="mr-2 h-4 w-4" />
+          <span>Help</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Sign out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
