@@ -170,6 +170,12 @@ const Auth = () => {
               </>
             )}
           </Button>
+          <Button
+            className="mt-4 bg-blue-600 text-white"
+            onClick={() => setIsLoading(false)}
+          >
+            Force Unlock UI
+        </Button>
         </CardContent>
         <CardFooter className="flex justify-center border-t border-green-100 pt-4">
           <button
