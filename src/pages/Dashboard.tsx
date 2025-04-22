@@ -11,8 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [businessProfile, setBusinessProfile] = useState({ 
-    city: "Your City", 
-    state: "State" 
+    city: "", 
+    state: "",
+    address: "" 
   });
 
   // Fetch business profile data when component mounts
@@ -21,11 +22,23 @@ const Dashboard = () => {
       try {
         const { data, error } = await supabase
           .from('business_profiles')
-          .select('city, state')
+          .select('city, state, address')
           .single();
         
         if (data) {
-          setBusinessProfile(data);
+          // If we have an address, parse it to get city and state
+          if (data.address) {
+            const addressParts = data.address.split(',');
+            if (addressParts.length >= 2) {
+              const state = addressParts[addressParts.length - 1].trim();
+              const city = addressParts[addressParts.length - 2].trim();
+              setBusinessProfile({ ...data, city, state });
+            } else {
+              setBusinessProfile(data);
+            }
+          } else {
+            setBusinessProfile(data);
+          }
         }
       } catch (error) {
         console.error("Error fetching business profile:", error);
@@ -118,7 +131,9 @@ const Dashboard = () => {
 
       {/* Weather forecast - responsive design */}
       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 shadow-sm border border-blue-100">
-        <h2 className="text-lg font-semibold mb-2 text-blue-800">3-Day Forecast for {businessProfile.city}, {businessProfile.state}</h2>
+        <h2 className="text-lg font-semibold mb-2 text-blue-800">
+          3-Day Forecast for {businessProfile.city || "Your City"}, {businessProfile.state || "State"}
+        </h2>
         <WeatherForecast />
       </div>
 

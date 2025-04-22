@@ -18,32 +18,52 @@ const Settings = () => {
   const [useMockData, setUseMockData] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isClearingData, setIsClearingData] = useState(false);
-  const [isMockDataDialogOpen, setIsMockDataDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const [businessProfile, setBusinessProfile] = useState({
+    business_name: "You Grow I Mow",
+    email: "",
+    phone: "",
+    address: "",
+    default_tax: 7.5
+  });
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const fetchBusinessProfile = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-          
-          setIsAdmin(data?.role === 'admin' || import.meta.env.DEV);
+        const { data } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .single();
+        
+        if (data) {
+          setBusinessProfile(data);
         }
       } catch (error) {
-        console.error('Error checking admin status:', error);
-        if (import.meta.env.DEV) {
-          setIsAdmin(true);
-        }
+        console.error('Error fetching business profile:', error);
       }
     };
 
-    checkAdminStatus();
+    fetchBusinessProfile();
   }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        setIsAdmin(data?.role === 'admin' || import.meta.env.DEV);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      if (import.meta.env.DEV) {
+        setIsAdmin(true);
+      }
+    }
+  };
 
   const handleMockDataToggle = async (enabled: boolean) => {
     setUseMockData(enabled);
@@ -94,7 +114,6 @@ const Settings = () => {
       });
     } finally {
       setIsClearingData(false);
-      setIsMockDataDialogOpen(false);
     }
   };
 
@@ -118,6 +137,10 @@ const Settings = () => {
     }
   };
 
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -134,11 +157,11 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <GeneralSettings
-            businessName="You Grow I Mow"
-            email=""
-            phone=""
-            address=""
-            defaultTaxRate={7.5}
+            businessName={businessProfile.business_name}
+            email={businessProfile.email}
+            phone={businessProfile.phone}
+            address={businessProfile.address}
+            defaultTaxRate={businessProfile.default_tax}
             onLogoUpload={() => {}}
           />
         </CardContent>
