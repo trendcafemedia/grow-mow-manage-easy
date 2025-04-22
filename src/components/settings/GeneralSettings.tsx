@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,8 @@ const GeneralSettings = ({
   const [address, setAddress] = useState(initialAddress);
   const [defaultTaxRate, setDefaultTaxRate] = useState(initialDefaultTaxRate);
   const [isSaving, setIsSaving] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,6 +54,7 @@ const GeneralSettings = ({
           phone,
           address,
           default_tax: defaultTaxRate,
+          logo_url: logoUrl
         })
         .eq('id', (await supabase.from('business_profiles').select('id').single()).data?.id);
 
@@ -71,6 +74,46 @@ const GeneralSettings = ({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `logos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('business-assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('business-assets')
+        .getPublicUrl(filePath);
+
+      setLogoUrl(data.publicUrl);
+      toast({
+        title: "Logo uploaded",
+        description: "Your new logo has been uploaded successfully.",
+      });
+      
+      if (onLogoUpload) onLogoUpload();
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload logo. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLogoButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   const InfoTooltip = ({ content }: { content: string }) => (
@@ -98,7 +141,7 @@ const GeneralSettings = ({
           placeholder="Enter your business name (e.g., You Grow I Mow)" 
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
-          className="border-2 focus:border-primary"
+          className="border-[#888888] hover:border-primary focus:border-primary"
           required
         />
       </div>
@@ -115,7 +158,7 @@ const GeneralSettings = ({
             placeholder="Enter your business contact email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-2 focus:border-primary"
+            className="border-[#888888] hover:border-primary focus:border-primary"
             required
             pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
             title="Please enter a valid email address"
@@ -132,7 +175,7 @@ const GeneralSettings = ({
             placeholder="Enter your business phone number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="border-2 focus:border-primary"
+            className="border-[#888888] hover:border-primary focus:border-primary"
             pattern="[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}"
             title="Please enter a valid phone number"
             required
@@ -161,9 +204,20 @@ const GeneralSettings = ({
         </div>
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-3xl">
-            🌱
+            {logoUrl ? (
+              <img src={logoUrl} alt="Business Logo" className="h-16 w-16 rounded-full object-cover" />
+            ) : (
+              <span>🌱</span>
+            )}
           </div>
-          <Button type="button" variant="outline" onClick={onLogoUpload}>
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <Button type="button" variant="outline" onClick={handleLogoButtonClick}>
             Upload New Logo
           </Button>
         </div>
@@ -180,7 +234,7 @@ const GeneralSettings = ({
           placeholder="Enter your local sales tax rate" 
           value={defaultTaxRate}
           onChange={(e) => setDefaultTaxRate(Number(e.target.value))}
-          className="border-2 focus:border-primary"
+          className="border-[#888888] hover:border-primary focus:border-primary"
           step="0.01"
           min="0"
           max="100"

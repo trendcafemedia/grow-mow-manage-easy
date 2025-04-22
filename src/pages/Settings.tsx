@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useToast, toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import GeneralSettings from "@/components/settings/GeneralSettings";
 import MockDataToggle from "@/components/settings/MockDataToggle";
@@ -24,6 +24,7 @@ const Settings = () => {
     address: "",
     default_tax: 7.5
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchBusinessProfile = async () => {
@@ -43,6 +44,29 @@ const Settings = () => {
 
     fetchBusinessProfile();
   }, []);
+
+  const handleLogoUpload = () => {
+    const fetchUpdatedProfile = async () => {
+      try {
+        const { data } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .single();
+        
+        if (data) {
+          setBusinessProfile(data);
+          toast({
+            title: "Profile updated",
+            description: "Your logo has been updated in your profile",
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching updated business profile:', error);
+      }
+    };
+
+    fetchUpdatedProfile();
+  };
 
   const checkAdminStatus = async () => {
     try {
@@ -158,7 +182,7 @@ const Settings = () => {
             phone={businessProfile.phone}
             address={businessProfile.address}
             defaultTaxRate={businessProfile.default_tax}
-            onLogoUpload={() => {}}
+            onLogoUpload={handleLogoUpload}
           />
         </CardContent>
       </Card>
