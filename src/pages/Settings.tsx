@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import GeneralSettings from "@/components/settings/GeneralSettings";
 import MockDataToggle from "@/components/settings/MockDataToggle";
 import TestDataControl from "@/components/settings/TestDataControl";
 import StripeSettings from "@/components/settings/StripeSettings";
@@ -135,41 +133,14 @@ const Settings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="businessName">Business Name</Label>
-            <Input id="businessName" placeholder="Your Business Name" defaultValue="You Grow I Mow" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="your@email.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" placeholder="(555) 123-4567" />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="address">Business Address</Label>
-            <Textarea id="address" placeholder="123 Main St, Anytown, USA" />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="logo">Logo</Label>
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-3xl">
-                🌱
-              </div>
-              <Button variant="outline">Upload New Logo</Button>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="defaultTax">Default Tax Rate (%)</Label>
-            <Input id="defaultTax" type="number" placeholder="8.25" defaultValue="7.5" />
-          </div>
+          <GeneralSettings
+            businessName="You Grow I Mow"
+            email=""
+            phone=""
+            address=""
+            defaultTaxRate={7.5}
+            onLogoUpload={() => {}}
+          />
         </CardContent>
       </Card>
       
