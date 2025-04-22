@@ -3,10 +3,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { InfoIcon } from "lucide-react";
 
 interface GeneralSettingsProps {
   businessName: string;
@@ -73,32 +79,48 @@ const GeneralSettings = ({
         <Label htmlFor="businessName">Business Name</Label>
         <Input 
           id="businessName" 
-          placeholder="Your Business Name" 
+          placeholder="Enter your business name (e.g., You Grow I Mow)" 
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
           required
         />
+        <p className="text-sm text-muted-foreground">
+          Your full business name as it appears on invoices and marketing materials.
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Business Email</Label>
           <Input 
             id="email" 
             type="email" 
-            placeholder="your@email.com"
+            placeholder="Enter your business contact email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            title="Please enter a valid email address"
           />
+          <p className="text-sm text-muted-foreground">
+            Email where customers can reach you for inquiries.
+          </p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">Business Phone</Label>
           <Input 
             id="phone" 
-            placeholder="(555) 123-4567"
+            type="tel"
+            placeholder="Enter your business phone number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            pattern="[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}"
+            title="Please enter a valid phone number"
+            required
           />
+          <p className="text-sm text-muted-foreground">
+            Main contact number for your business.
+          </p>
         </div>
       </div>
       
@@ -108,8 +130,12 @@ const GeneralSettings = ({
           id="address"
           value={address}
           onChange={(value) => setAddress(value)}
-          placeholder="123 Main St, Anytown, USA"
+          placeholder="Start typing your full business address"
+          required
         />
+        <p className="text-sm text-muted-foreground">
+          Your primary business location for service area and weather forecasting.
+        </p>
       </div>
       
       <div className="space-y-2">
@@ -122,20 +148,39 @@ const GeneralSettings = ({
             Upload New Logo
           </Button>
         </div>
+        <p className="text-sm text-muted-foreground">
+          Upload a square logo for your business profile and invoices.
+        </p>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="defaultTax">Default Tax Rate (%)</Label>
+        <Label htmlFor="defaultTax" className="flex items-center gap-2">
+          Default Tax Rate (%)
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <InfoIcon className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>The default tax rate applied to services in your area.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </Label>
         <Input 
           id="defaultTax" 
           type="number" 
-          placeholder="8.25" 
+          placeholder="Enter your local sales tax rate" 
           value={defaultTaxRate}
           onChange={(e) => setDefaultTaxRate(Number(e.target.value))}
           step="0.01"
           min="0"
           max="100"
+          required
         />
+        <p className="text-sm text-muted-foreground">
+          Local sales tax percentage (e.g., 8.25 for 8.25%). Used in service pricing.
+        </p>
       </div>
 
       <Button type="submit" disabled={isSaving}>
@@ -146,3 +191,4 @@ const GeneralSettings = ({
 };
 
 export default GeneralSettings;
+
