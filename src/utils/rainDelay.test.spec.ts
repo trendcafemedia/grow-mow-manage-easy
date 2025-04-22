@@ -21,10 +21,17 @@ describe('Rain Delay Utility', () => {
       }
     };
 
-    const result = checkRainDelay(weatherData);
-    expect(result.shouldDelay).toBe(true);
+    const testService = {
+      id: '123',
+      scheduled_at: '2025-04-21T10:00:00Z',
+      customer_name: 'John Doe',
+      service_type: 'Lawn Mowing'
+    };
+
+    const result = checkRainDelay(testService, weatherData);
+    expect(result.isDelayed).toBe(true);
     expect(result.reason).toBe('High chance of rain (80%)');
-    expect(result.nextAvailableDate).toEqual(new Date('2025-04-22T10:00:00Z'));
+    expect(result.newDate).toEqual(new Date('2025-04-22T10:00:00Z'));
   });
 
   it('should not delay service if rain probability is below threshold', () => {
@@ -35,9 +42,16 @@ describe('Rain Delay Utility', () => {
       }
     };
 
-    const result = checkRainDelay(weatherData);
-    expect(result.shouldDelay).toBe(false);
+    const testService = {
+      id: '123',
+      scheduled_at: '2025-04-21T10:00:00Z',
+      customer_name: 'John Doe',
+      service_type: 'Lawn Mowing'
+    };
+
+    const result = checkRainDelay(testService, weatherData);
+    expect(result.isDelayed).toBe(false);
     expect(result.reason).toBe('Weather conditions are suitable for service');
-    expect(result.nextAvailableDate).toBeNull();
+    expect(result.newDate).toBeNull();
   });
 });
