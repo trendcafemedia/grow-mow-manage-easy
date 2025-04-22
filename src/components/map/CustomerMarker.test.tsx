@@ -1,9 +1,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { CustomerMarker } from './CustomerMarker';
 import { Customer } from '@/types/customer';
-import { MOCK_STREET_VIEW_RESPONSE } from '@/tests/utils/testUtils';
 
 // Mock the InfoWindowF and MarkerF components
 vi.mock('@react-google-maps/api', () => ({
@@ -41,7 +40,7 @@ describe('CustomerMarker', () => {
     const onSelect = vi.fn();
     const onClose = vi.fn();
     
-    const { getByTestId } = render(
+    render(
       <CustomerMarker
         customer={mockCustomer}
         isSelected={false}
@@ -50,15 +49,14 @@ describe('CustomerMarker', () => {
       />
     );
     
-    const marker = getByTestId('google-marker');
-    expect(marker).toBeInTheDocument();
+    expect(screen.getByTestId('google-marker')).toBeInTheDocument();
   });
 
   it('calls onSelect when marker is clicked', () => {
     const onSelect = vi.fn();
     const onClose = vi.fn();
     
-    const { getByTestId } = render(
+    render(
       <CustomerMarker
         customer={mockCustomer}
         isSelected={false}
@@ -67,9 +65,7 @@ describe('CustomerMarker', () => {
       />
     );
     
-    const marker = getByTestId('google-marker');
-    fireEvent.click(marker);
-    
+    fireEvent.click(screen.getByTestId('google-marker'));
     expect(onSelect).toHaveBeenCalledWith(mockCustomer);
   });
 
@@ -77,7 +73,7 @@ describe('CustomerMarker', () => {
     const onSelect = vi.fn();
     const onClose = vi.fn();
     
-    const { getByTestId } = render(
+    render(
       <CustomerMarker
         customer={mockCustomer}
         isSelected={true}
@@ -86,15 +82,14 @@ describe('CustomerMarker', () => {
       />
     );
     
-    const infoWindow = getByTestId('google-info-window');
-    expect(infoWindow).toBeInTheDocument();
+    expect(screen.getByTestId('google-info-window')).toBeInTheDocument();
   });
 
   it('calls onClose when info window close button is clicked', () => {
     const onSelect = vi.fn();
     const onClose = vi.fn();
     
-    const { getByTestId } = render(
+    render(
       <CustomerMarker
         customer={mockCustomer}
         isSelected={true}
@@ -103,9 +98,7 @@ describe('CustomerMarker', () => {
       />
     );
     
-    const closeButton = getByTestId('close-info-window');
-    fireEvent.click(closeButton);
-    
+    fireEvent.click(screen.getByTestId('close-info-window'));
     expect(onClose).toHaveBeenCalled();
   });
 });

@@ -50,7 +50,6 @@ describe('CustomerListView', () => {
   it('renders the customer list with correct number of items', () => {
     render(<CustomerListView customers={mockCustomers} />);
     
-    // Check that the component renders all customers
     expect(screen.getByText('John Smith')).toBeInTheDocument();
     expect(screen.getByText('Sarah Johnson')).toBeInTheDocument();
     expect(screen.getByText('David Wilson')).toBeInTheDocument();
@@ -80,7 +79,6 @@ describe('CustomerListView', () => {
     const unpaidBadge = screen.getByText('unpaid');
     const overdueBadge = screen.getByText('overdue');
     
-    // Check that the badges have the correct styling classes
     expect(paidBadge).toHaveClass('bg-green-100');
     expect(unpaidBadge).toHaveClass('bg-red-100');
     expect(overdueBadge).toHaveClass('bg-red-100');
@@ -91,8 +89,6 @@ describe('CustomerListView', () => {
     
     expect(screen.getByText('$75.50 due')).toBeInTheDocument();
     expect(screen.getByText('$150.75 due')).toBeInTheDocument();
-    
-    // The paid customer should not show an amount due
     expect(screen.queryByText('$0.00 due')).not.toBeInTheDocument();
   });
 
@@ -102,9 +98,11 @@ describe('CustomerListView', () => {
     const mapLinks = screen.getAllByText('Open in Maps');
     expect(mapLinks).toHaveLength(3);
     
-    // Check that the links have the correct href attributes
     mapLinks.forEach((link, index) => {
-      expect(link.closest('a')).toHaveAttribute('href', expect.stringContaining(`place_id:${mockCustomers[index].place_id}`));
+      expect(link.closest('a')).toHaveAttribute(
+        'href',
+        expect.stringContaining(`place_id:${mockCustomers[index].place_id}`)
+      );
     });
   });
 });

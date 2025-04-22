@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MapView } from './MapView';
 import { Customer } from '@/types/customer';
 
@@ -66,7 +66,7 @@ describe('MapView', () => {
     const onMarkerClose = vi.fn();
     const onMapLoad = vi.fn();
     
-    const { getByTestId } = render(
+    render(
       <MapView
         customers={mockCustomers}
         center={{ lat: 38.4220, lng: -77.4083 }}
@@ -78,7 +78,7 @@ describe('MapView', () => {
       />
     );
     
-    expect(getByTestId('google-map')).toBeInTheDocument();
+    expect(screen.getByTestId('google-map')).toBeInTheDocument();
   });
 
   it('renders correct number of CustomerMarker components', () => {
@@ -86,7 +86,7 @@ describe('MapView', () => {
     const onMarkerClose = vi.fn();
     const onMapLoad = vi.fn();
     
-    const { getByTestId } = render(
+    render(
       <MapView
         customers={mockCustomers}
         center={{ lat: 38.4220, lng: -77.4083 }}
@@ -98,8 +98,8 @@ describe('MapView', () => {
       />
     );
     
-    expect(getByTestId('customer-marker-customer-1')).toBeInTheDocument();
-    expect(getByTestId('customer-marker-customer-2')).toBeInTheDocument();
+    expect(screen.getByTestId('customer-marker-customer-1')).toBeInTheDocument();
+    expect(screen.getByTestId('customer-marker-customer-2')).toBeInTheDocument();
   });
 
   it('calls onMapLoad when the map loads', () => {
