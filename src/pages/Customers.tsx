@@ -1,57 +1,35 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription 
-} from "@/components/ui/dialog";
+import { CustomerCard } from "@/components/CustomerList/CustomerCard";
+import { CustomerDetailModal } from "@/components/CustomerList/CustomerDetailModal";
+import { Customer } from "@/types/customer";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Customers = () => {
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data - would come from API in real app
-  const customers = [
-    {
-      id: "1",
-      name: "Johnson Family",
-      address: "123 Maple St",
-      nextService: "Jun 28, 2023",
-      avatarUrl: "J"
-    },
-    {
-      id: "2",
-      name: "Mrs. Wilson",
-      address: "456 Oak Ave",
-      nextService: "Tomorrow",
-      avatarUrl: "W"
-    },
-    {
-      id: "3",
-      name: "Mr. Garcia",
-      address: "789 Pine Rd",
-      nextService: "Today",
-      avatarUrl: "G"
-    },
-    {
-      id: "4",
-      name: "Robinson Household",
-      address: "101 Cedar Ln",
-      nextService: "Jun 30, 2023",
-      avatarUrl: "R"
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*');
+      
+      if (error) throw error;
+      return data;
     }
-  ];
+  });
 
-  const handleCustomerClick = (customer: any) => {
-    setSelectedCustomer(customer);
-    setDetailsOpen(true);
-  };
+  const filteredCustomers = customers.filter(customer => 
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.address.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -69,66 +47,26 @@ const Customers = () => {
           type="search"
           placeholder="Search customers..."
           className="pl-8 bg-background"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {customers.map((customer) => (
-          <Card 
-            key={customer.id} 
-            className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => handleCustomerClick(customer)}
-          >
-            <CardContent className="p-0">
-              <div className="flex items-center p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold mr-3">
-                  {customer.avatarUrl}
-                </div>
-                <div>
-                  <h3 className="font-medium">{customer.name}</h3>
-                  <p className="text-sm text-muted-foreground">{customer.address}</p>
-                </div>
-              </div>
-              <div className="border-t px-4 py-3 bg-muted/50">
-                <p className="text-sm">
-                  <span className="font-medium">Next Service:</span> {customer.nextService}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        {filteredCustomers.map((customer) => (
+          <CustomerCard
+            key={customer.id}
+            customer={customer}
+            onClick={setSelectedCustomer}
+          />
         ))}
       </div>
 
-      {/* Customer Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedCustomer?.name}</DialogTitle>
-            <DialogDescription>
-              Customer details and service history
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="mt-4">
-            {selectedCustomer && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium mb-1">Address</h3>
-                  <p className="text-sm">{selectedCustomer.address}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">Next Service</h3>
-                  <p className="text-sm">{selectedCustomer.nextService}</p>
-                </div>
-                <div className="pt-4 flex space-x-2">
-                  <Button className="flex-1">Schedule Service</Button>
-                  <Button variant="outline" className="flex-1">New Invoice</Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CustomerDetailModal
+        customer={selectedCustomer}
+        isOpen={!!selectedCustomer}
+        onClose={() => setSelectedCustomer(null)}
+      />
     </div>
   );
 };
