@@ -3,22 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { InfoIcon, Trash, Loader2 } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import MockDataToggle from "@/components/settings/MockDataToggle";
+import TestDataControl from "@/components/settings/TestDataControl";
+import StripeSettings from "@/components/settings/StripeSettings";
+import ThemeSettings from "@/components/settings/ThemeSettings";
 import { generateMockCustomers, seedTestCustomers, seedTestServices, clearMockData, clearTestData } from "@/tests/utils/testUtils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 const Settings = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -186,29 +181,17 @@ const Settings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Enable Stripe Payments</h3>
-              <p className="text-sm text-muted-foreground">Allow customers to pay with credit card</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
+          <StripeSettings
+            stripeEnabled={true}
+            onStripeToggle={() => {}}
+          />
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Enable Inventory Management</h3>
-              <p className="text-sm text-muted-foreground">Track inventory items and fuel logs</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Dark Mode</h3>
-              <p className="text-sm text-muted-foreground">Use dark theme throughout the app</p>
-            </div>
-            <Switch />
-          </div>
+          <ThemeSettings
+            darkMode={false}
+            inventoryEnabled={true}
+            onDarkModeToggle={() => {}}
+            onInventoryToggle={() => {}}
+          />
         </CardContent>
       </Card>
       
@@ -229,81 +212,20 @@ const Settings = () => {
               </AlertDescription>
             </Alert>
             
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Use Mock Data</h3>
-                <p className="text-sm text-muted-foreground">
-                  Seed the database with mock customers around Stafford, VA
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <Switch 
-                  checked={useMockData} 
-                  onCheckedChange={handleMockDataToggle}
-                  disabled={isLoading}
-                />
-                {useMockData && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        disabled={isClearingData}
-                      >
-                        <Trash className="h-4 w-4 mr-2" />
-                        Clear Mock Data
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Clear Mock Data</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to clear mock data? This cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setIsMockDataDialogOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={handleClearMockData}
-                          disabled={isClearingData}
-                        >
-                          {isClearingData ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Clearing...
-                            </>
-                          ) : (
-                            "Clear Mock Data"
-                          )}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            </div>
+            <MockDataToggle
+              useMockData={useMockData}
+              isLoading={isLoading}
+              isClearingData={isClearingData}
+              onMockDataToggle={handleMockDataToggle}
+              onClearMockData={handleClearMockData}
+            />
             
             <Separator />
             
-            <div className="pt-2">
-              <Button 
-                variant="destructive" 
-                onClick={handleClearTestData}
-                disabled={isClearingData}
-              >
-                <Trash className="h-4 w-4 mr-2" />
-                Clear Test Data
-              </Button>
-              <p className="text-sm text-muted-foreground mt-2">
-                Removes all test fixtures from the database. Use this before adding real data.
-              </p>
-            </div>
+            <TestDataControl
+              isClearingData={isClearingData}
+              onClearTestData={handleClearTestData}
+            />
           </CardContent>
         </Card>
       )}
