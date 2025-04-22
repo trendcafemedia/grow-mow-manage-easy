@@ -14,7 +14,7 @@ interface CustomerStatusBarProps {
 export function CustomerStatusBar({ customer }: CustomerStatusBarProps) {
   const statusStyles = {
     paid: "bg-green-500",
-    upcoming: "bg-orange-400",
+    upcoming: "bg-yellow-400", // Changed from orange-400 to yellow-400 (#FFEB3B)
     overdue: "bg-red-500"
   };
 

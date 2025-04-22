@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Cloud, CloudRain, Sun } from "lucide-react";
+import { Cloud, CloudRain, Sun } from "lucide-react";
 
 interface WeatherDay {
   date: string;
@@ -11,9 +11,10 @@ interface WeatherDay {
 
 interface WeatherForecastProps {
   forecast?: WeatherDay[];
+  location?: string;
 }
 
-export function WeatherForecast({ forecast }: WeatherForecastProps) {
+export function WeatherForecast({ forecast, location }: WeatherForecastProps) {
   // Mock data - would be replaced with real API data from OpenWeatherMap
   const mockForecast: WeatherDay[] = [
     {
@@ -61,13 +62,7 @@ export function WeatherForecast({ forecast }: WeatherForecastProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center">
-          <Calendar className="mr-2 h-5 w-5" />
-          3-Day Weather Forecast
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="grid grid-cols-3 gap-2">
           {weatherData.map((day, index) => (
             <div 

@@ -1,35 +1,66 @@
 
+import { useState, useEffect } from "react";
 import { Calendar, DollarSign, User, Clock } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { WeatherForecast } from "@/components/WeatherForecast";
 import { CustomerStatusBar } from "@/components/dashboard/CustomerStatusBar";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [businessProfile, setBusinessProfile] = useState({ city: "Your City", state: "State" });
+
+  // Fetch business profile data when component mounts
+  useEffect(() => {
+    const fetchBusinessProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('business_profiles')
+          .select('city, state')
+          .single();
+        
+        if (data) {
+          setBusinessProfile(data);
+        }
+      } catch (error) {
+        console.error("Error fetching business profile:", error);
+      }
+    };
+
+    fetchBusinessProfile();
+  }, []);
+
   // Mock data - in a real app, this would come from an API
   const stats = [
     {
       title: "Earnings This Week",
       value: "$487.50",
       icon: <DollarSign className="h-4 w-4" />,
-      description: "8% increase from last week"
+      description: "8% increase from last week",
+      onClick: () => navigate("/billing?filter=paid-this-week")
     },
     {
       title: "Jobs This Week",
       value: "7",
       icon: <Calendar className="h-4 w-4" />,
-      description: "2 more than last week"
+      description: "2 more than last week",
+      onClick: () => navigate("/calendar")
     },
     {
       title: "Unpaid Balance",
       value: "$210.00",
       icon: <DollarSign className="h-4 w-4" />,
-      description: "3 customers with unpaid invoices"
+      description: "3 customers with unpaid invoices",
+      onClick: () => navigate("/billing?filter=unpaid")
     },
     {
       title: "Next Appointment",
       value: "Today, 3:30 PM",
       icon: <Clock className="h-4 w-4" />,
-      description: "Mrs. Johnson - Lawn Mowing"
+      description: "Mrs. Johnson - Lawn Mowing",
+      onClick: () => navigate("/services/1")
     }
   ];
 
@@ -67,20 +98,23 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
       </div>
 
-      {/* Weather forecast - moved to top */}
-      <WeatherForecast />
+      {/* Weather forecast - moved to top with location */}
+      <div>
+        <h2 className="text-lg font-semibold mb-2">3-Day Forecast for {businessProfile.city}, {businessProfile.state}</h2>
+        <WeatherForecast />
+      </div>
 
       {/* Customer status section */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Customer Status</h2>
-        <div className="bg-card rounded-lg p-4 border">
+        <Card className="bg-card rounded-lg p-4 border">
           {customers.map((customer) => (
             <CustomerStatusBar key={customer.id} customer={customer} />
           ))}
-        </div>
+        </Card>
       </div>
 
-      {/* Stat cards section */}
+      {/* Stat cards section - made clickable */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <StatCard
@@ -89,6 +123,8 @@ const Dashboard = () => {
             value={stat.value}
             icon={stat.icon}
             description={stat.description}
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={stat.onClick}
           />
         ))}
       </div>

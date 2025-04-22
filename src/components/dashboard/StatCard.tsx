@@ -8,11 +8,15 @@ interface StatCardProps {
   icon?: React.ReactNode;
   description?: string;
   className?: string;
+  onClick?: () => void;
 }
 
-export function StatCard({ title, value, icon, description, className }: StatCardProps) {
+export function StatCard({ title, value, icon, description, className, onClick }: StatCardProps) {
   return (
-    <Card className={cn("", className)}>
+    <Card 
+      className={cn("", className)} 
+      onClick={onClick}
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon && <div className="text-muted-foreground">{icon}</div>}

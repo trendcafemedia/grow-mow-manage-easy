@@ -12,9 +12,10 @@ interface CustomerMarkerProps {
 
 export const CustomerMarker = ({ customer, isSelected, onSelect, onClose }: CustomerMarkerProps) => {
   const getMarkerIcon = (status: string) => {
+    // Use custom colors based on status
     switch (status) {
       case "paid": return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
-      case "upcoming": return "http://maps.google.com/mapfiles/ms/icons/orange-dot.png";
+      case "upcoming": return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"; // Changed from orange to yellow
       case "unpaid": case "overdue": return "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
       default: return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
     }
@@ -56,6 +57,17 @@ const InfoWindowPanel = ({ customer }: InfoWindowPanelProps) => (
   <div className="p-2 max-w-xs">
     <h3 className="font-semibold">{customer.name}</h3>
     <p className="text-xs mt-1">{customer.address}</p>
+    
+    {customer.place_id && (
+      <div className="mt-2 mb-2 h-32 w-full">
+        <img 
+          src={`https://maps.googleapis.com/maps/api/streetview?size=150x100&location=place_id:${customer.place_id}&key=${process.env.GOOGLE_MAPS_API_KEY}`}
+          alt={`Street view of ${customer.address}`}
+          className="w-full h-full object-cover rounded"
+        />
+      </div>
+    )}
+    
     <div className="mt-2 text-xs">
       <p>Next Service: {customer.nextService}</p>
       {(customer.status === "unpaid" || customer.status === "overdue") && (
@@ -66,7 +78,7 @@ const InfoWindowPanel = ({ customer }: InfoWindowPanelProps) => (
       <p className="mt-1">
         <span className={`px-2 py-0.5 rounded-full text-xs uppercase font-semibold ${
           customer.status === "paid" ? "bg-green-100 text-green-800" :
-          customer.status === "upcoming" ? "bg-orange-100 text-orange-800" :
+          customer.status === "upcoming" ? "bg-yellow-100 text-yellow-800" : // Changed from orange to yellow
           "bg-red-100 text-red-800"
         }`}>
           {customer.status}
@@ -88,4 +100,3 @@ const InfoWindowPanel = ({ customer }: InfoWindowPanelProps) => (
     </div>
   </div>
 );
-
