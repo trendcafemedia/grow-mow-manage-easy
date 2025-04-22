@@ -14,12 +14,12 @@ interface StatCardProps {
 export function StatCard({ title, value, icon, description, className, onClick }: StatCardProps) {
   return (
     <Card 
-      className={cn("", className)} 
+      className={cn("transition-all duration-200 hover:scale-102", className)} 
       onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        {icon && <div className="text-green-600">{icon}</div>}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
