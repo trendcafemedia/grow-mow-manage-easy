@@ -17,6 +17,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 
 const Settings = () => {
@@ -242,52 +243,52 @@ const Settings = () => {
                   disabled={isLoading}
                 />
                 {useMockData && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsMockDataDialogOpen(true)}
-                    disabled={isClearingData}
-                  >
-                    <Trash className="h-4 w-4 mr-2" />
-                    Clear Mock Data
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        disabled={isClearingData}
+                      >
+                        <Trash className="h-4 w-4 mr-2" />
+                        Clear Mock Data
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Clear Mock Data</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to clear mock data? This cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsMockDataDialogOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={handleClearMockData}
+                          disabled={isClearingData}
+                        >
+                          {isClearingData ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Clearing...
+                            </>
+                          ) : (
+                            "Clear Mock Data"
+                          )}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </div>
             </div>
             
-            <Dialog open={isMockDataDialogOpen} onOpenChange={setIsMockDataDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Clear Mock Data</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to clear mock data? This cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsMockDataDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleClearMockData}
-                    disabled={isClearingData}
-                  >
-                    {isClearingData ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Clearing...
-                      </>
-                    ) : (
-                      "Clear Mock Data"
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
             <Separator />
             
             <div className="pt-2">
