@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { shouldDelayServiceDueToRain } from './rainDelay';
+import { checkRainDelay } from './rainDelay';
 
 describe('Rain Delay Utility', () => {
   beforeEach(() => {
@@ -21,7 +21,7 @@ describe('Rain Delay Utility', () => {
       }
     };
 
-    const result = shouldDelayServiceDueToRain(weatherData);
+    const result = checkRainDelay(weatherData);
     expect(result.shouldDelay).toBe(true);
     expect(result.reason).toBe('High chance of rain (80%)');
     expect(result.nextAvailableDate).toEqual(new Date('2025-04-22T10:00:00Z'));
@@ -35,7 +35,7 @@ describe('Rain Delay Utility', () => {
       }
     };
 
-    const result = shouldDelayServiceDueToRain(weatherData);
+    const result = checkRainDelay(weatherData);
     expect(result.shouldDelay).toBe(false);
     expect(result.reason).toBe('Weather conditions are suitable for service');
     expect(result.nextAvailableDate).toBeNull();

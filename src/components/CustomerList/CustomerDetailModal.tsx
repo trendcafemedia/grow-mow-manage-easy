@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Customer } from "@/types/customer";
 import { ServiceScheduler } from "@/components/Service/ServiceScheduler";
+import { useNavigate } from "react-router-dom";
 
 interface CustomerDetailModalProps {
   customer: Customer | null;
@@ -15,14 +16,16 @@ interface CustomerDetailModalProps {
 export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetailModalProps) {
   const [schedulerError, setSchedulerError] = useState(false);
   const [invoiceError, setInvoiceError] = useState(false);
+  const navigate = useNavigate();
 
   if (!customer) return null;
 
   const handleScheduleService = () => {
     try {
-      // Attempt to open scheduler
-      setSchedulerError(false);
+      navigate(`/services/new?customerId=${customer.id}`);
+      onClose();
     } catch (error) {
+      console.error("Error opening scheduler:", error);
       setSchedulerError(true);
     }
   };
@@ -32,6 +35,7 @@ export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetai
       // Attempt to open invoice modal
       setInvoiceError(false);
     } catch (error) {
+      console.error("Error opening invoice form:", error);
       setInvoiceError(true);
     }
   };

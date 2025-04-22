@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,16 +17,14 @@ const Settings = () => {
   const [useMockData, setUseMockData] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isClearingData, setIsClearingData] = useState(false);
+  const [isMockDataDialogOpen, setIsMockDataDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if the current user is an admin (for development, assume admin role)
     const checkAdminStatus = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // In a real app, you'd check the user's role in the database
-          // For now, we'll use a simplified check
           const { data } = await supabase
             .from('users')
             .select('role')
@@ -38,7 +35,6 @@ const Settings = () => {
         }
       } catch (error) {
         console.error('Error checking admin status:', error);
-        // In development mode, set as admin for testing
         if (import.meta.env.DEV) {
           setIsAdmin(true);
         }
@@ -48,20 +44,16 @@ const Settings = () => {
     checkAdminStatus();
   }, []);
 
-  // Handle mock data toggle
   const handleMockDataToggle = async (enabled: boolean) => {
     setUseMockData(enabled);
     
     if (enabled) {
       setIsLoading(true);
       try {
-        // Generate mock customers in Stafford, VA area
         const mockCustomers = generateMockCustomers(15);
         
-        // Seed the database with the mock data
         await seedTestCustomers(mockCustomers);
         
-        // Seed services for each customer
         for (const customer of mockCustomers) {
           await seedTestServices(customer.id, 2);
         }
@@ -83,7 +75,6 @@ const Settings = () => {
     }
   };
 
-  // Handle clearing mock data
   const handleClearMockData = async () => {
     setIsClearingData(true);
     try {
@@ -102,10 +93,10 @@ const Settings = () => {
       });
     } finally {
       setIsClearingData(false);
+      setIsMockDataDialogOpen(false);
     }
   };
 
-  // Handle clearing test data
   const handleClearTestData = async () => {
     setIsClearingData(true);
     try {
@@ -243,18 +234,53 @@ const Settings = () => {
                   onCheckedChange={handleMockDataToggle}
                   disabled={isLoading}
                 />
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleClearMockData}
-                  disabled={!useMockData || isClearingData}
-                >
-                  <Trash className="h-4 w-4 mr-2" />
-                  Clear Mock Data
-                </Button>
+                {useMockData && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsMockDataDialogOpen(true)}
+                    disabled={isClearingData}
+                  >
+                    <Trash className="h-4 w-4 mr-2" />
+                    Clear Mock Data
+                  </Button>
+                )}
               </div>
             </div>
             
+            <Dialog open={isMockDataDialogOpen} onOpenChange={setIsMockDataDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Clear Mock Data</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to clear mock data? This cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsMockDataDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleClearMockData}
+                    disabled={isClearingData}
+                  >
+                    {isClearingData ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Clearing...
+                      </>
+                    ) : (
+                      "Clear Mock Data"
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Separator />
             
             <div className="pt-2">
