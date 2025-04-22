@@ -73,59 +73,78 @@ const GeneralSettings = ({
     }
   };
 
+  const InfoTooltip = ({ content }: { content: string }) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger type="button" className="ml-2">
+          <InfoIcon className="h-4 w-4 text-muted-foreground" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="max-w-xs">{content}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="businessName">Business Name</Label>
+        <div className="flex items-center">
+          <Label htmlFor="businessName">Business Name</Label>
+          <InfoTooltip content="Your full business name as it appears on invoices and marketing materials." />
+        </div>
         <Input 
           id="businessName" 
           placeholder="Enter your business name (e.g., You Grow I Mow)" 
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
+          className="border-2 focus:border-primary"
           required
         />
-        <p className="text-sm text-muted-foreground">
-          Your full business name as it appears on invoices and marketing materials.
-        </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="email">Business Email</Label>
+          <div className="flex items-center">
+            <Label htmlFor="email">Business Email</Label>
+            <InfoTooltip content="Email where customers can reach you for inquiries." />
+          </div>
           <Input 
             id="email" 
             type="email" 
             placeholder="Enter your business contact email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="border-2 focus:border-primary"
             required
             pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
             title="Please enter a valid email address"
           />
-          <p className="text-sm text-muted-foreground">
-            Email where customers can reach you for inquiries.
-          </p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Business Phone</Label>
+          <div className="flex items-center">
+            <Label htmlFor="phone">Business Phone</Label>
+            <InfoTooltip content="Main contact number for your business." />
+          </div>
           <Input 
             id="phone" 
             type="tel"
             placeholder="Enter your business phone number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            className="border-2 focus:border-primary"
             pattern="[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}"
             title="Please enter a valid phone number"
             required
           />
-          <p className="text-sm text-muted-foreground">
-            Main contact number for your business.
-          </p>
         </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="address">Business Address</Label>
+        <div className="flex items-center">
+          <Label htmlFor="address">Business Address</Label>
+          <InfoTooltip content="Your primary business location for service area and weather forecasting." />
+        </div>
         <AddressAutocomplete
           id="address"
           value={address}
@@ -133,13 +152,13 @@ const GeneralSettings = ({
           placeholder="Start typing your full business address"
           required
         />
-        <p className="text-sm text-muted-foreground">
-          Your primary business location for service area and weather forecasting.
-        </p>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="logo">Logo</Label>
+        <div className="flex items-center">
+          <Label htmlFor="logo">Logo</Label>
+          <InfoTooltip content="Upload a square logo for your business profile and invoices." />
+        </div>
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-3xl">
             🌱
@@ -148,47 +167,32 @@ const GeneralSettings = ({
             Upload New Logo
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Upload a square logo for your business profile and invoices.
-        </p>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="defaultTax" className="flex items-center gap-2">
-          Default Tax Rate (%)
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <InfoIcon className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>The default tax rate applied to services in your area.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </Label>
+        <div className="flex items-center">
+          <Label htmlFor="defaultTax">Default Tax Rate (%)</Label>
+          <InfoTooltip content="The default tax rate applied to services in your area." />
+        </div>
         <Input 
           id="defaultTax" 
           type="number" 
           placeholder="Enter your local sales tax rate" 
           value={defaultTaxRate}
           onChange={(e) => setDefaultTaxRate(Number(e.target.value))}
+          className="border-2 focus:border-primary"
           step="0.01"
           min="0"
           max="100"
           required
         />
-        <p className="text-sm text-muted-foreground">
-          Local sales tax percentage (e.g., 8.25 for 8.25%). Used in service pricing.
-        </p>
       </div>
 
-      <Button type="submit" disabled={isSaving}>
-        {isSaving ? "Saving..." : "Save Changes"}
+      <Button type="submit" className="w-full" disabled={isSaving}>
+        {isSaving ? "Saving..." : "Save Business Profile"}
       </Button>
     </form>
   );
 };
 
 export default GeneralSettings;
-

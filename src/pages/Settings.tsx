@@ -1,6 +1,4 @@
-
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -144,10 +142,7 @@ const Settings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <Button>Save Changes</Button>
-      </div>
+      <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
       
       <Card>
         <CardHeader>
