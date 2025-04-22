@@ -1,43 +1,15 @@
 import { useState, useEffect } from "react";
-import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useJsApiLoader } from "@react-google-maps/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { calculateDirections } from "@/utils/directions";
+import { Customer } from "@/types/customer";
+import { MapView } from "@/components/map/MapView";
+import { CustomerListView } from "@/components/map/CustomerListView";
 
 // Default map center (will be updated from business profile if available)
 const defaultCenter = { lat: 39.8283, lng: -98.5795 }; // Center of USA
-
-interface Customer {
-  id: string;
-  name: string;
-  address: string;
-  lat: number | null;
-  lng: number | null;
-  place_id?: string;
-  status: "paid" | "upcoming" | "unpaid" | "overdue";
-  nextService?: string;
-  daysUntilNextService?: number;
-  amountDue?: number;
-  services?: {
-    id: string;
-    scheduled_at: string;
-    invoices: {
-      id: string;
-      amount: number;
-      status: string;
-    }[];
-  }[];
-}
-
-const mapContainerStyle = {
-  width: "100%",
-  height: "calc(100vh - 200px)",
-  minHeight: "500px",
-  borderRadius: "8px",
-};
 
 const Map = () => {
   const [center, setCenter] = useState(defaultCenter);
@@ -55,159 +27,149 @@ const Map = () => {
   });
 
   useEffect(() => {
-    const fetchBusinessAddressAndCustomers = async () => {
-      try {
-        // First, fetch business profile for default center
-        const { data: businessProfile, error: businessError } = await supabase
-          .from("business_profiles")
-          .select("lat, lng")
-          .single();
-
-        if (!businessError && businessProfile?.lat && businessProfile?.lng) {
-          setCenter({ lat: businessProfile.lat, lng: businessProfile.lng });
-        }
-
-        // Fetch customers with coordinates and service data
-        const { data, error } = await supabase
-          .from("customers")
-          .select(`
-            id,
-            name,
-            address,
-            lat,
-            lng,
-            place_id,
-            services (
-              id,
-              scheduled_at,
-              invoices (
-                id,
-                amount,
-                status
-              )
-            )
-          `);
-
-        if (error) throw error;
-
-        if (data) {
-          const today = new Date();
-          const customersWithStatus = data.map((customer): Customer => {
-            // Calculate status based on next service date and payment status
-            let status: "paid" | "upcoming" | "unpaid" | "overdue" = "paid";
-            let amountDue = 0;
-            let nextService = "";
-            let daysUntilNextService = 999;
-
-            // Get the next service date if available
-            if (customer.services && customer.services.length > 0) {
-              // Sort services by scheduled_at in ascending order to get the next upcoming one
-              const sortedServices = [...customer.services].sort((a, b) => 
-                new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
-              );
-              
-              const nextServiceObj = sortedServices.find(s => new Date(s.scheduled_at) >= today);
-              
-              if (nextServiceObj) {
-                const nextServiceDate = new Date(nextServiceObj.scheduled_at);
-                nextService = nextServiceDate.toLocaleDateString();
-                
-                // Calculate days until next service
-                const diffTime = nextServiceDate.getTime() - today.getTime();
-                daysUntilNextService = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                // Check if there's an unpaid invoice for this service
-                const hasUnpaidInvoice = nextServiceObj.invoices && 
-                  nextServiceObj.invoices.some(inv => inv.status === 'unpaid' || inv.status === 'overdue');
-                
-                if (hasUnpaidInvoice) {
-                  status = daysUntilNextService < 0 ? "overdue" : "unpaid";
-                  // Sum up unpaid amounts
-                  amountDue = nextServiceObj.invoices
-                    .filter(inv => inv.status === 'unpaid' || inv.status === 'overdue')
-                    .reduce((sum, inv) => sum + (inv.amount || 0), 0);
-                } else if (daysUntilNextService <= 7) {
-                  status = "upcoming";
-                }
-              }
-            }
-
-            // Fallback if no next service or for demo purposes
-            if (!nextService) {
-              const randomStatus = Math.floor(Math.random() * 4);
-              switch (randomStatus) {
-                case 0: status = "paid"; break;
-                case 1: status = "upcoming"; daysUntilNextService = Math.floor(Math.random() * 7) + 1; break;
-                case 2: status = "unpaid"; amountDue = 50; break;
-                case 3: status = "overdue"; amountDue = 75; break;
-              }
-
-              const nextServiceDate = new Date(today);
-              nextServiceDate.setDate(today.getDate() + (status === "upcoming" ? daysUntilNextService : Math.floor(Math.random() * 14)));
-              nextService = nextServiceDate.toLocaleDateString();
-            }
-
-            // Create a properly typed customer with the fields we have
-            return {
-              id: customer.id,
-              name: customer.name,
-              address: customer.address || "",
-              lat: customer.lat || (39.8283 + (Math.random() * 10 - 5)),
-              lng: customer.lng || (-98.5795 + (Math.random() * 20 - 10)),
-              place_id: customer.place_id,
-              status,
-              nextService,
-              daysUntilNextService,
-              amountDue,
-              services: customer.services,
-            };
-          });
-
-          setCustomers(customersWithStatus);
-          
-          // Create bounds for customer markers
-          if (customersWithStatus.length > 0 && isLoaded) {
-            const newBounds = new google.maps.LatLngBounds();
-            
-            customersWithStatus.forEach(customer => {
-              if (customer.lat && customer.lng) {
-                newBounds.extend({ lat: customer.lat, lng: customer.lng });
-              }
-            });
-            
-            setBounds(newBounds);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
-          description: "Could not load map data",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (isLoaded) {
       fetchBusinessAddressAndCustomers();
     }
   }, [toast, isLoaded]);
 
-  const getMarkerIcon = (status: string) => {
-    switch (status) {
-      case "paid": return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
-      case "upcoming": return "http://maps.google.com/mapfiles/ms/icons/orange-dot.png";
-      case "unpaid": case "overdue": return "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
-      default: return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+  const fetchBusinessAddressAndCustomers = async () => {
+    try {
+      // First, fetch business profile for default center
+      const { data: businessProfile, error: businessError } = await supabase
+        .from("business_profiles")
+        .select("lat, lng")
+        .single();
+
+      if (!businessError && businessProfile?.lat && businessProfile?.lng) {
+        setCenter({ lat: businessProfile.lat, lng: businessProfile.lng });
+      }
+
+      // Fetch customers with coordinates and service data
+      const { data, error } = await supabase
+        .from("customers")
+        .select(`
+          id,
+          name,
+          address,
+          lat,
+          lng,
+          place_id,
+          services (
+            id,
+            scheduled_at,
+            invoices (
+              id,
+              amount,
+              status
+            )
+          )
+        `);
+
+      if (error) throw error;
+
+      if (data) {
+        const today = new Date();
+        const customersWithStatus = data.map((customer): Customer => {
+          // Calculate status based on next service date and payment status
+          let status: "paid" | "upcoming" | "unpaid" | "overdue" = "paid";
+          let amountDue = 0;
+          let nextService = "";
+          let daysUntilNextService = 999;
+
+          // Get the next service date if available
+          if (customer.services && customer.services.length > 0) {
+            // Sort services by scheduled_at in ascending order to get the next upcoming one
+            const sortedServices = [...customer.services].sort((a, b) => 
+              new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
+            );
+            
+            const nextServiceObj = sortedServices.find(s => new Date(s.scheduled_at) >= today);
+            
+            if (nextServiceObj) {
+              const nextServiceDate = new Date(nextServiceObj.scheduled_at);
+              nextService = nextServiceDate.toLocaleDateString();
+              
+              // Calculate days until next service
+              const diffTime = nextServiceDate.getTime() - today.getTime();
+              daysUntilNextService = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              
+              // Check if there's an unpaid invoice for this service
+              const hasUnpaidInvoice = nextServiceObj.invoices && 
+                nextServiceObj.invoices.some(inv => inv.status === 'unpaid' || inv.status === 'overdue');
+              
+              if (hasUnpaidInvoice) {
+                status = daysUntilNextService < 0 ? "overdue" : "unpaid";
+                // Sum up unpaid amounts
+                amountDue = nextServiceObj.invoices
+                  .filter(inv => inv.status === 'unpaid' || inv.status === 'overdue')
+                  .reduce((sum, inv) => sum + (inv.amount || 0), 0);
+              } else if (daysUntilNextService <= 7) {
+                status = "upcoming";
+              }
+            }
+          }
+
+          // Fallback if no next service or for demo purposes
+          if (!nextService) {
+            const randomStatus = Math.floor(Math.random() * 4);
+            switch (randomStatus) {
+              case 0: status = "paid"; break;
+              case 1: status = "upcoming"; daysUntilNextService = Math.floor(Math.random() * 7) + 1; break;
+              case 2: status = "unpaid"; amountDue = 50; break;
+              case 3: status = "overdue"; amountDue = 75; break;
+            }
+
+            const nextServiceDate = new Date(today);
+            nextServiceDate.setDate(today.getDate() + (status === "upcoming" ? daysUntilNextService : Math.floor(Math.random() * 14)));
+            nextService = nextServiceDate.toLocaleDateString();
+          }
+
+          // Create a properly typed customer with the fields we have
+          return {
+            id: customer.id,
+            name: customer.name,
+            address: customer.address || "",
+            lat: customer.lat || (39.8283 + (Math.random() * 10 - 5)),
+            lng: customer.lng || (-98.5795 + (Math.random() * 20 - 10)),
+            place_id: customer.place_id,
+            status,
+            nextService,
+            daysUntilNextService,
+            amountDue,
+            services: customer.services,
+          };
+        });
+
+        setCustomers(customersWithStatus);
+        
+        // Create bounds for customer markers
+        if (customersWithStatus.length > 0 && isLoaded) {
+          const newBounds = new google.maps.LatLngBounds();
+          
+          customersWithStatus.forEach(customer => {
+            if (customer.lat && customer.lng) {
+              newBounds.extend({ lat: customer.lat, lng: customer.lng });
+            }
+          });
+          
+          setBounds(newBounds);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast({
+        title: "Error",
+        description: "Could not load map data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleMapLoad = (map: google.maps.Map) => {
     if (bounds && !bounds.isEmpty()) {
       map.fitBounds(bounds);
-      // Set a minimum zoom level to prevent excessive zoom on single markers
       const listener = google.maps.event.addListener(map, 'idle', () => {
         if (map.getZoom() > 15) map.setZoom(15);
         google.maps.event.removeListener(listener);
@@ -237,131 +199,19 @@ const Map = () => {
         </TabsList>
         
         <TabsContent value="map" className="mt-4">
-          <Card>
-            <CardContent className="p-0 overflow-hidden">
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={center}
-                zoom={zoom}
-                onLoad={handleMapLoad}
-                options={{
-                  mapTypeControl: true,
-                  streetViewControl: true,
-                  fullscreenControl: true,
-                }}
-              >
-                {customers.map((customer) => (
-                  <MarkerF
-                    key={customer.id}
-                    position={{ 
-                      lat: customer.lat || defaultCenter.lat, 
-                      lng: customer.lng || defaultCenter.lng 
-                    }}
-                    icon={{
-                      url: getMarkerIcon(customer.status),
-                      scaledSize: new google.maps.Size(30, 30),
-                    }}
-                    onClick={() => setSelectedMarker(customer)}
-                  />
-                ))}
-
-                {selectedMarker && (
-                  <InfoWindowF
-                    position={{ 
-                      lat: selectedMarker.lat || defaultCenter.lat, 
-                      lng: selectedMarker.lng || defaultCenter.lng 
-                    }}
-                    onCloseClick={() => setSelectedMarker(null)}
-                  >
-                    <div className="p-2 max-w-xs">
-                      <h3 className="font-semibold">{selectedMarker.name}</h3>
-                      <p className="text-xs mt-1">{selectedMarker.address}</p>
-                      <div className="mt-2 text-xs">
-                        <p>Next Service: {selectedMarker.nextService}</p>
-                        {selectedMarker.status === "unpaid" || selectedMarker.status === "overdue" ? (
-                          <p className="text-red-500 font-medium">
-                            Amount Due: ${selectedMarker.amountDue?.toFixed(2)}
-                          </p>
-                        ) : null}
-                        <p className="mt-1">
-                          <span className={`px-2 py-0.5 rounded-full text-xs uppercase font-semibold ${
-                            selectedMarker.status === "paid" ? "bg-green-100 text-green-800" :
-                            selectedMarker.status === "upcoming" ? "bg-orange-100 text-orange-800" :
-                            "bg-red-100 text-red-800"
-                          }`}>
-                            {selectedMarker.status}
-                          </span>
-                        </p>
-                        {/* Only render the Google Maps link if place_id exists */}
-                        {selectedMarker.place_id && (
-                          <div className="mt-2">
-                            <a 
-                              href={`https://www.google.com/maps/?q=place_id:${selectedMarker.place_id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline flex items-center"
-                            >
-                              <MapPin className="h-3 w-3 mr-1" />
-                              Open in Google Maps
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </InfoWindowF>
-                )}
-              </GoogleMap>
-            </CardContent>
-          </Card>
+          <MapView
+            customers={customers}
+            center={center}
+            zoom={zoom}
+            selectedMarker={selectedMarker}
+            onMarkerSelect={setSelectedMarker}
+            onMarkerClose={() => setSelectedMarker(null)}
+            onMapLoad={handleMapLoad}
+          />
         </TabsContent>
         
         <TabsContent value="list" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer List</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y">
-                {customers.map((customer) => (
-                  <div key={customer.id} className="py-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{customer.name}</h3>
-                        <p className="text-sm text-muted-foreground">{customer.address}</p>
-                        <p className="text-sm mt-1">Next Service: {customer.nextService}</p>
-                        {/* Only render the Google Maps link if place_id exists */}
-                        {customer.place_id && (
-                          <a 
-                            href={`https://www.google.com/maps/?q=place_id:${customer.place_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center mt-1"
-                          >
-                            <MapPin className="h-3 w-3 mr-1" />
-                            Open in Maps
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className={`px-2 py-0.5 rounded-full text-xs uppercase font-semibold ${
-                          customer.status === "paid" ? "bg-green-100 text-green-800" :
-                          customer.status === "upcoming" ? "bg-orange-100 text-orange-800" :
-                          "bg-red-100 text-red-800"
-                        }`}>
-                          {customer.status}
-                        </span>
-                        {(customer.status === "unpaid" || customer.status === "overdue") && (
-                          <p className="text-sm text-red-500 mt-1">
-                            ${customer.amountDue?.toFixed(2)} due
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <CustomerListView customers={customers} />
         </TabsContent>
       </Tabs>
     </div>
