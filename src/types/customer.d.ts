@@ -6,6 +6,7 @@ export interface Customer {
   lat: number | null;
   lng: number | null;
   place_id?: string;
+  phone?: string;
   status: "paid" | "upcoming" | "unpaid" | "overdue";
   nextService?: string;
   daysUntilNextService?: number;
