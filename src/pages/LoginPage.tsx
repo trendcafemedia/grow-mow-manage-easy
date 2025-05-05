@@ -30,7 +30,7 @@ const Icons = {
   ),
 }
 
-export default function LoginPage() {
+function LoginPage() {
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -94,15 +94,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
-  }
-  
-  const handleSignUp = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    // For now, just show a toast that signup is not implemented
-    toast({
-      title: "Not implemented",
-      description: "Sign up functionality is coming soon!",
-    })
   }
 
   return (
@@ -211,7 +202,6 @@ export default function LoginPage() {
               Don't have an account?{" "}
               <a 
                 href="#" 
-                onClick={handleSignUp}
                 className="text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
               >
                 Sign up
@@ -222,4 +212,8 @@ export default function LoginPage() {
       </Card>
     </div>
   )
+}
+
+export default function LoginPageDemo() {
+  return <LoginPage />
 }

@@ -8,8 +8,8 @@ import { CustomerCard } from "@/components/CustomerList/CustomerCard";
 import { CustomerDetailModal } from "@/components/CustomerList/CustomerDetailModal";
 import { Customer } from "@/types/customer";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

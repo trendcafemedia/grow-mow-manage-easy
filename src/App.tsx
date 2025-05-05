@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -46,9 +45,9 @@ const AppRoutes = () => {
   return (
     <>
       <Toaster />
-      <Sonner />
       <Routes>
         {/* Public routes */}
+        <Route path="/" element={!user && !isDevelopment ? <Navigate to="/auth" replace /> : null} />
         <Route 
           path="/auth" 
           element={!user && !isDevelopment ? <LoginPage /> : <Navigate to="/" replace />} 

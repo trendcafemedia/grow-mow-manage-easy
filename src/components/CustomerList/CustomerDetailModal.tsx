@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Customer } from "@/types/customer";
 import { ServiceScheduler } from "@/components/Service/ServiceScheduler";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Phone, Clock } from "lucide-react";
+import { MapPin, Phone, Clock, Map } from "lucide-react";
 
 interface CustomerDetailModalProps {
   customer: Customer | null;
@@ -19,9 +18,15 @@ export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetai
   const [invoiceError, setInvoiceError] = useState(false);
   const [driveTime, setDriveTime] = useState<string | null>(null);
   const [driveDistance, setDriveDistance] = useState<string | null>(null);
+  const [mapError, setMapError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Reset errors when modal opens/closes
+    setSchedulerError(false);
+    setInvoiceError(false);
+    setMapError(false);
+    
     // Calculate drive time and distance when customer changes
     if (customer && customer.lat && customer.lng) {
       // This would typically use a real API like Google Maps Distance Matrix
@@ -32,7 +37,7 @@ export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetai
       setDriveDistance(`${distance} miles`);
       setDriveTime(`${time} minutes`);
     }
-  }, [customer]);
+  }, [customer, isOpen]);
 
   if (!customer) return null;
 
@@ -56,6 +61,20 @@ export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetai
     }
   };
 
+  const handleMapError = () => {
+    setMapError(true);
+  };
+
+  const getGoogleMapsApiKey = () => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.warn("Google Maps API key not found in environment variables");
+      setMapError(true);
+      return null;
+    }
+    return apiKey;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
@@ -64,16 +83,24 @@ export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetai
         </DialogHeader>
 
         <div className="space-y-4">
-          {customer.place_id && (
-            <div className="h-[300px] w-full">
+          {customer.place_id && customer.lat && customer.lng && !mapError ? (
+            <div className="h-[300px] w-full relative">
               <iframe
                 width="100%"
                 height="100%"
                 loading="lazy"
-                src={`https://www.google.com/maps/embed/v1/streetview?location=${customer.lat},${customer.lng}&key=${process.env.GOOGLE_MAPS_API_KEY}`}
+                src={`https://www.google.com/maps/embed/v1/streetview?location=${customer.lat},${customer.lng}&key=${getGoogleMapsApiKey()}`}
                 className="rounded-lg"
                 title={`Street view of ${customer.address}`}
+                onError={handleMapError}
               ></iframe>
+            </div>
+          ) : (
+            <div className="h-[300px] w-full bg-muted rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <Map className="h-10 w-10 mx-auto text-muted-foreground" />
+                <p className="mt-2 text-sm text-muted-foreground">Map preview not available</p>
+              </div>
             </div>
           )}
 
@@ -81,7 +108,7 @@ export function CustomerDetailModal({ customer, isOpen, onClose }: CustomerDetai
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <p className="text-sm">{customer.address}</p>
+                <p className="text-sm">{customer.address || "No address provided"}</p>
               </div>
               
               {customer.phone && (
