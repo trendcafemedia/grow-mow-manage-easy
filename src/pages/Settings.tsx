@@ -79,46 +79,26 @@ const Settings = () => {
         </TabsContent>
         
         <TabsContent value="app">
-          <Card>
-            <CardHeader>
-              <CardTitle>App Settings</CardTitle>
-              <CardDescription>
-                Customize the application behavior and appearance.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AppSettings 
-                stripeEnabled={stripeEnabled}
-                darkMode={darkMode}
-                inventoryEnabled={inventoryEnabled}
-                onStripeToggle={handleStripeToggle}
-                onDarkModeToggle={handleDarkModeToggle}
-                onInventoryToggle={handleInventoryToggle}
-              />
-            </CardContent>
-          </Card>
+          <AppSettings 
+            stripeEnabled={stripeEnabled}
+            darkMode={darkMode}
+            inventoryEnabled={inventoryEnabled}
+            onStripeToggle={handleStripeToggle}
+            onDarkModeToggle={handleDarkModeToggle}
+            onInventoryToggle={handleInventoryToggle}
+          />
         </TabsContent>
         
         <TabsContent value="admin">
-          <Card>
-            <CardHeader>
-              <CardTitle>Administrator Settings</CardTitle>
-              <CardDescription>
-                Advanced settings for administrators only.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AdminSettings 
-                isAdmin={true}
-                useMockData={useMockData}
-                isLoading={isLoading}
-                isClearingData={isClearingData}
-                onMockDataToggle={handleMockDataToggle}
-                onClearMockData={handleClearMockData}
-                onClearTestData={handleClearTestData}
-              />
-            </CardContent>
-          </Card>
+          <AdminSettings 
+            isAdmin={true}
+            useMockData={useMockData}
+            isLoading={isLoading}
+            isClearingData={isClearingData}
+            onMockDataToggle={handleMockDataToggle}
+            onClearMockData={handleClearMockData}
+            onClearTestData={handleClearTestData}
+          />
         </TabsContent>
       </Tabs>
     </div>

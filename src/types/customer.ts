@@ -10,14 +10,14 @@ export interface Customer {
   place_id?: string;
   status?: 'pending' | 'active' | 'inactive' | 'paid' | 'unpaid' | 'upcoming' | 'overdue';
   nextService?: string;
-  daysUntilNextService?: number; // Added this property
-  amountDue?: number; // Added this property
-  serviceType?: string; // Made optional since it may not be available when creating
-  nextServiceDate?: string; // Made optional since it may not be available when creating
+  daysUntilNextService?: number;
+  amountDue?: number;
+  serviceType?: string;
+  nextServiceDate?: string;
   services?: Array<{
     id: string;
     scheduled_at: string;
-    invoices?: Array<{  // Made optional in case service has no invoices
+    invoices?: Array<{
       id: string;
       amount: number;
       status: string;

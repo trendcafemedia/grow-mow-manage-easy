@@ -14,7 +14,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, register, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +24,7 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        await register(email, password);
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration.",
