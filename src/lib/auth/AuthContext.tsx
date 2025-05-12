@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client'; // Changed to use the client with hardcoded values
+import { supabase } from '@/lib/supabase'; // Using the updated supabase client
 import type { User, Session } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
 
@@ -12,6 +11,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null, user: User | null }>;
   register: (email: string, password: string) => Promise<{ error: Error | null, user: User | null }>;
 }
 
@@ -118,6 +118,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Add signUp as an alias for register for backward compatibility
+  const signUp = register;
+
   const signInWithGoogle = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -220,7 +223,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle,
     signOut,
     resetPassword,
-    register
+    register,
+    signUp
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,3 +1,4 @@
+
 export interface Customer {
   id: string;
   name: string;
@@ -9,6 +10,8 @@ export interface Customer {
   place_id?: string;
   status?: 'pending' | 'active' | 'inactive' | 'paid' | 'unpaid' | 'upcoming' | 'overdue';
   nextService?: string;
+  daysUntilNextService?: number; // Added this property
+  amountDue?: number; // Added this property
   serviceType?: string; // Made optional since it may not be available when creating
   nextServiceDate?: string; // Made optional since it may not be available when creating
   services?: Array<{

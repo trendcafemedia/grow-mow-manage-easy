@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import GeneralSettings from "@/components/settings/GeneralSettings";
@@ -7,6 +7,45 @@ import AppSettings from "@/components/settings/AppSettings";
 import AdminSettings from "@/components/settings/AdminSettings";
 
 const Settings = () => {
+  const [stripeEnabled, setStripeEnabled] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [inventoryEnabled, setInventoryEnabled] = useState(false);
+  const [useMockData, setUseMockData] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isClearingData, setIsClearingData] = useState(false);
+  
+  const handleStripeToggle = (enabled: boolean) => {
+    setStripeEnabled(enabled);
+  };
+  
+  const handleDarkModeToggle = (enabled: boolean) => {
+    setDarkMode(enabled);
+  };
+  
+  const handleInventoryToggle = (enabled: boolean) => {
+    setInventoryEnabled(enabled);
+  };
+  
+  const handleMockDataToggle = (enabled: boolean) => {
+    setUseMockData(enabled);
+  };
+  
+  const handleClearMockData = () => {
+    setIsClearingData(true);
+    // Simulate clearing data
+    setTimeout(() => {
+      setIsClearingData(false);
+    }, 1000);
+  };
+  
+  const handleClearTestData = () => {
+    setIsClearingData(true);
+    // Simulate clearing data
+    setTimeout(() => {
+      setIsClearingData(false);
+    }, 1000);
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-5xl">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
@@ -48,7 +87,14 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AppSettings />
+              <AppSettings 
+                stripeEnabled={stripeEnabled}
+                darkMode={darkMode}
+                inventoryEnabled={inventoryEnabled}
+                onStripeToggle={handleStripeToggle}
+                onDarkModeToggle={handleDarkModeToggle}
+                onInventoryToggle={handleInventoryToggle}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -62,7 +108,15 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AdminSettings />
+              <AdminSettings 
+                isAdmin={true}
+                useMockData={useMockData}
+                isLoading={isLoading}
+                isClearingData={isClearingData}
+                onMockDataToggle={handleMockDataToggle}
+                onClearMockData={handleClearMockData}
+                onClearTestData={handleClearTestData}
+              />
             </CardContent>
           </Card>
         </TabsContent>
