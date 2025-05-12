@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client'; // Changed to use the client with hardcoded values
 import type { User, Session } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
 
