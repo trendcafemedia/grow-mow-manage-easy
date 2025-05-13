@@ -48,14 +48,20 @@ const AppRoutes = () => {
       <Toaster />
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={!user && !isDevelopment ? <Navigate to="/login" replace /> : null} />
+        <Route 
+          path="/" 
+          element={!user && !isDevelopment ? 
+            <Navigate to="/login" replace /> : 
+            <Navigate to="/dashboard" replace />
+          } 
+        />
         <Route 
           path="/auth" 
-          element={!user && !isDevelopment ? <Auth /> : <Navigate to="/" replace />} 
+          element={!user && !isDevelopment ? <Auth /> : <Navigate to="/dashboard" replace />} 
         />
         <Route 
           path="/login" 
-          element={!user && !isDevelopment ? <LoginPage /> : <Navigate to="/" replace />} 
+          element={!user && !isDevelopment ? <LoginPage /> : <Navigate to="/dashboard" replace />} 
         />
         <Route path="/auth/callback" element={<AuthCallback />} />
         
@@ -63,7 +69,7 @@ const AppRoutes = () => {
         <Route 
           element={user || isDevelopment ? <MainLayout /> : <Navigate to="/login" replace />}
         >
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/inventory" element={<Inventory />} />
