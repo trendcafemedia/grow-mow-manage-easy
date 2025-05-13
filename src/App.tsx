@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
@@ -47,16 +48,20 @@ const AppRoutes = () => {
       <Toaster />
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={!user && !isDevelopment ? <Navigate to="/auth" replace /> : null} />
+        <Route path="/" element={!user && !isDevelopment ? <Navigate to="/login" replace /> : null} />
         <Route 
           path="/auth" 
+          element={!user && !isDevelopment ? <Auth /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/login" 
           element={!user && !isDevelopment ? <LoginPage /> : <Navigate to="/" replace />} 
         />
         <Route path="/auth/callback" element={<AuthCallback />} />
         
         {/* Protected routes - bypass auth check in development */}
         <Route 
-          element={user || isDevelopment ? <MainLayout /> : <Navigate to="/auth" replace />}
+          element={user || isDevelopment ? <MainLayout /> : <Navigate to="/login" replace />}
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/customers" element={<Customers />} />
